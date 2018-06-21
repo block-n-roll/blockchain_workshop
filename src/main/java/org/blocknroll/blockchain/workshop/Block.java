@@ -28,8 +28,9 @@ class Block {
 
     /**
      * Constructor
+     *
      * @param facts the facts to be consolidated in this block.
-     * @param prev the previous block.
+     * @param prev  the previous block.
      */
     Block(Collection<Fact> facts, Block prev) {
         // Init block's members non related to mining process.
@@ -81,7 +82,7 @@ class Block {
 
     void setTimestamp(Long timestamp) {
         // Check inputs
-        if(timestamp == null) {
+        if (timestamp == null) {
             throw new IllegalArgumentException("Timestamp cannot be null.");
         }
         this.timestamp = timestamp;

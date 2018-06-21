@@ -12,7 +12,8 @@ class CryptoUtil {
 
     /**
      * Signs a document with the given secret key and returns the signature for that document.
-     * @param fact the document to be signed.
+     *
+     * @param fact   the document to be signed.
      * @param secKey the secret key to sign the document.
      * @return the signature for the given doc and secret key.
      */
@@ -23,7 +24,8 @@ class CryptoUtil {
 
     /**
      * Verifies the fact's content on a given key.
-     * @param fact the fact to be verified.
+     *
+     * @param fact   the fact to be verified.
      * @param pubKey the key used to proof the fact.
      * @return true if the fact is authentic, false otherwise.
      */
@@ -34,7 +36,8 @@ class CryptoUtil {
 
     /**
      * Signs a block with the given secret key and returns the signature for that block.
-     * @param block the block to be signed.
+     *
+     * @param block  the block to be signed.
      * @param secKey the secret key to sign the block.
      * @return the signature for the given block and secret key.
      */
@@ -45,7 +48,8 @@ class CryptoUtil {
 
     /**
      * Verifies the block's content on a given key.
-     * @param block the block to be verified.
+     *
+     * @param block  the block to be verified.
      * @param pubKey the key used to proof the block.
      * @return true if the block is authentic, false otherwise.
      */
@@ -56,6 +60,7 @@ class CryptoUtil {
 
     /**
      * This is the function to
+     *
      * @param doc
      * @return
      */

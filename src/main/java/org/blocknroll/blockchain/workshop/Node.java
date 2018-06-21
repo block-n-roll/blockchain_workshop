@@ -40,6 +40,7 @@ public class Node {
 
     /**
      * Add facts to be grouped and mined into a block.
+     *
      * @param facts the facts to be mined.
      */
     public void addFacts(Collection<Fact> facts) {
@@ -47,7 +48,7 @@ public class Node {
             throw new IllegalArgumentException("Cannot create a fact with null values");
         }
         Block block = miner.mine(facts);
-        if(requestProofOfWork(block)) {
+        if (requestProofOfWork(block)) {
             addBlock(block);
         }
     }
@@ -63,6 +64,7 @@ public class Node {
 
     /**
      * Add a block to the chain.
+     *
      * @param block the block to be send to verify and add to the chain.
      */
     public void addBlock(Block block) {
@@ -72,7 +74,7 @@ public class Node {
         }
 
         // Check errors
-        if(chain.addBlock(block)) {
+        if (chain.addBlock(block)) {
             // TODO: Response ERROR
         }
 
@@ -81,6 +83,7 @@ public class Node {
 
     /**
      * Request to the cluster the proof of work for a given mined block
+     *
      * @param block the block to be send to the cluster for verification.
      */
     public boolean requestProofOfWork(Block block) {
@@ -96,6 +99,7 @@ public class Node {
 
     /**
      * Synchronize the given chain with the current one.
+     *
      * @param chain the chain to be synchronised.
      */
     public boolean verifyChain(Chain chain) {

@@ -28,6 +28,7 @@ class Miner {
 
     /**
      * This method creates the block on the given facts.
+     *
      * @param facts the facts to be mined inside the block.
      * @return the mined block.
      */
@@ -47,7 +48,7 @@ class Miner {
             block.setNonce(nonce++);
             block.setTimestamp(System.currentTimeMillis());
             hash = CryptoUtil.calculateHash(block);
-        } while(!validates(hash));
+        } while (!validates(hash));
         block.setHash(hash);
 
         // Sign the block
@@ -57,6 +58,7 @@ class Miner {
 
     /**
      * This is the method that checks the hash conditions required by the proof of work.
+     *
      * @param hash the hash to be tested against the proof of work condition.
      * @return true if it is a valid hash, false otherwise.
      */

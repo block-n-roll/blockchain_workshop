@@ -8,6 +8,7 @@ class Fact {
 
     /**
      * Constructor
+     *
      * @param dat the data held by this fact.
      * @param sig the signature used to protect this fact.
      */
@@ -18,6 +19,7 @@ class Fact {
 
     /**
      * Returns the data associated to this fact.
+     *
      * @return the data associated to this fact.
      */
     ByteBuffer getData() {
@@ -26,6 +28,7 @@ class Fact {
 
     /**
      * Returns the signature associated to this fact that guaranties that data has not been modified.
+     *
      * @return the signature associated to this fact.
      */
     ByteBuffer getSignature() {
