@@ -22,3 +22,10 @@ Workshop describing the functionality of a blockchain (mining, consensus, confli
                                | blocks:List<Block> |
                                +--------------------+
 ```
+
+# Contribution
+We follow google code style for this repository.
+Please find below the files to configure your IDE:
+
+* [intellij](https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml)
+* [eclipse](https://github.com/google/styleguide/blob/gh-pages/eclipse-java-google-style.xml)

@@ -8,84 +8,85 @@ import java.util.Collection;
  * This class represents a possible block in the chain.
  */
 class Block {
-    private Long identifier;
-    private Collection<Fact> facts;
-    private ByteBuffer previousHash;
-    private Long nonce;
-    private ByteBuffer hash;
-    private ByteBuffer signature;
-    private Long timestamp;
 
-    /**
-     * Constructor for genesis block.
-     */
-    Block() {
-        // Init Genesis block
-        this.identifier = 0L;
-        this.facts = new ArrayList<Fact>();
-        this.previousHash = ByteBuffer.allocate(32);
-    }
+  private Long identifier;
+  private Collection<Fact> facts;
+  private ByteBuffer previousHash;
+  private Long nonce;
+  private ByteBuffer hash;
+  private ByteBuffer signature;
+  private Long timestamp;
 
-    /**
-     * Constructor
-     *
-     * @param facts the facts to be consolidated in this block.
-     * @param prev  the previous block.
-     */
-    Block(Collection<Fact> facts, Block prev) {
-        // Init block's members non related to mining process.
-        this.identifier = prev.identifier + 1;
-        this.facts = facts;
-        this.previousHash = prev.previousHash;
-    }
+  /**
+   * Constructor for genesis block.
+   */
+  Block() {
+    // Init Genesis block
+    this.identifier = 0L;
+    this.facts = new ArrayList<Fact>();
+    this.previousHash = ByteBuffer.allocate(32);
+  }
 
-    Long getIdentifier() {
-        return identifier;
-    }
+  /**
+   * Constructor
+   *
+   * @param facts the facts to be consolidated in this block.
+   * @param prev the previous block.
+   */
+  Block(Collection<Fact> facts, Block prev) {
+    // Init block's members non related to mining process.
+    this.identifier = prev.identifier + 1;
+    this.facts = facts;
+    this.previousHash = prev.previousHash;
+  }
 
-    Long getNonce() {
-        return nonce;
-    }
+  Long getIdentifier() {
+    return identifier;
+  }
 
-    Collection<Fact> getFacts() {
-        return facts;
-    }
+  Long getNonce() {
+    return nonce;
+  }
 
-    ByteBuffer getPreviousHash() {
-        return previousHash;
-    }
+  Block setNonce(Long nonce) {
+    this.nonce = nonce;
+    return this;
+  }
 
-    ByteBuffer getHash() {
-        return hash;
-    }
+  Collection<Fact> getFacts() {
+    return facts;
+  }
 
-    ByteBuffer getSignature() {
-        return signature;
-    }
+  ByteBuffer getPreviousHash() {
+    return previousHash;
+  }
 
-    Long getTimestamp() {
-        return timestamp;
-    }
+  ByteBuffer getHash() {
+    return hash;
+  }
 
-    Block setNonce(Long nonce) {
-        this.nonce = nonce;
-        return this;
-    }
+  void setHash(ByteBuffer hash) {
+    this.hash = hash;
+  }
 
-    void setHash(ByteBuffer hash) {
-        this.hash = hash;
-    }
+  ByteBuffer getSignature() {
+    return signature;
+  }
 
-    void setSignature(ByteBuffer signature) {
-        this.signature = signature;
-    }
+  void setSignature(ByteBuffer signature) {
+    this.signature = signature;
+  }
 
-    void setTimestamp(Long timestamp) {
-        // Check inputs
-        if (timestamp == null) {
-            throw new IllegalArgumentException("Timestamp cannot be null.");
-        }
-        this.timestamp = timestamp;
+  Long getTimestamp() {
+    return timestamp;
+  }
+
+  void setTimestamp(Long timestamp) {
+    // Check inputs
+    if (timestamp == null) {
+      throw new IllegalArgumentException("Timestamp cannot be null.");
     }
+    this.timestamp = timestamp;
+  }
 
 }
