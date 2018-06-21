@@ -6,7 +6,7 @@ import java.util.Random;
 /**
  * Useful class to perform some crypto computation.
  */
-public class CryptoUtil {
+class CryptoUtil {
 
     private static Random random = new Random();
 
@@ -16,18 +16,18 @@ public class CryptoUtil {
      * @param secKey the secret key to sign the document.
      * @return the signature for the given doc and secret key.
      */
-    public static ByteBuffer sign(Fact fact, ByteBuffer secKey) {
+    static ByteBuffer sign(Fact fact, ByteBuffer secKey) {
         // TODO
         return null;
     }
 
     /**
-     * Verifies the fact's content on a given public key.
+     * Verifies the fact's content on a given key.
      * @param fact the fact to be verified.
-     * @param pubKey the public key used to proof the fact.
+     * @param pubKey the key used to proof the fact.
      * @return true if the fact is authentic, false otherwise.
      */
-    public static boolean verify(Fact fact, ByteBuffer pubKey) {
+    static boolean verify(Fact fact, ByteBuffer pubKey) {
         // TODO:
         return false;
     }
@@ -38,18 +38,18 @@ public class CryptoUtil {
      * @param secKey the secret key to sign the block.
      * @return the signature for the given block and secret key.
      */
-    public static ByteBuffer sign(Block block, ByteBuffer secKey) {
+    static ByteBuffer sign(Block block, ByteBuffer secKey) {
         // TODO: Sign the whole block info to proof that no byte is changed in the future.
         return null;
     }
 
     /**
-     * Verifies the block's content on a given public key.
+     * Verifies the block's content on a given key.
      * @param block the block to be verified.
-     * @param pubKey the public key used to proof the block.
+     * @param pubKey the key used to proof the block.
      * @return true if the block is authentic, false otherwise.
      */
-    public static boolean verify(Block block, ByteBuffer pubKey) {
+    static boolean verify(Block block, ByteBuffer pubKey) {
         // TODO:
         return false;
     }
@@ -59,12 +59,12 @@ public class CryptoUtil {
      * @param doc
      * @return
      */
-    public static ByteBuffer calculateHash(Block doc) {
+    static ByteBuffer calculateHash(Block doc) {
         // TODO:
         return null;
     }
 
-    public static Long getRandomLong() {
+    static Long getRandomLong() {
         return random.nextLong();
     }
 }

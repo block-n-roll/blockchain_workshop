@@ -1,13 +1,14 @@
 package org.blocknroll.blockchain.workshop;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
  * This class represents a possible block in the chain.
  */
-public class Block {
-    private String identifier;
+class Block {
+    private Long identifier;
     private Collection<Fact> facts;
     private ByteBuffer previousHash;
     private Long nonce;
@@ -16,58 +17,73 @@ public class Block {
     private Long timestamp;
 
     /**
-     * Constructor/
+     * Constructor for genesis block.
+     */
+    Block() {
+        // Init Genesis block
+        this.identifier = 0L;
+        this.facts = new ArrayList<Fact>();
+        this.previousHash = ByteBuffer.allocate(32);
+    }
+
+    /**
+     * Constructor
      * @param facts the facts to be consolidated in this block.
      * @param prev the previous block.
      */
-    public Block(Collection<Fact> facts, Block prev) {
-        this.identifier = prev.identifier;
+    Block(Collection<Fact> facts, Block prev) {
+        // Init block's members non related to mining process.
+        this.identifier = prev.identifier + 1;
         this.facts = facts;
         this.previousHash = prev.previousHash;
     }
 
-    public String getIdentifier() {
+    Long getIdentifier() {
         return identifier;
     }
 
-    public Long getNonce() {
+    Long getNonce() {
         return nonce;
     }
 
-    public Collection<Fact> getFacts() {
+    Collection<Fact> getFacts() {
         return facts;
     }
 
-    public ByteBuffer getPreviousHash() {
+    ByteBuffer getPreviousHash() {
         return previousHash;
     }
 
-    public ByteBuffer getHash() {
+    ByteBuffer getHash() {
         return hash;
     }
 
-    public ByteBuffer getSignature() {
+    ByteBuffer getSignature() {
         return signature;
     }
 
-    public Long getTimestamp() {
+    Long getTimestamp() {
         return timestamp;
     }
 
-    public Block setNonce(Long nonce) {
+    Block setNonce(Long nonce) {
         this.nonce = nonce;
         return this;
     }
 
-    public void setHash(ByteBuffer hash) {
+    void setHash(ByteBuffer hash) {
         this.hash = hash;
     }
 
-    public void setSignature(ByteBuffer signature) {
+    void setSignature(ByteBuffer signature) {
         this.signature = signature;
     }
 
-    public void setTimestamp(Long timestamp) {
+    void setTimestamp(Long timestamp) {
+        // Check inputs
+        if(timestamp == null) {
+            throw new IllegalArgumentException("Timestamp cannot be null.");
+        }
         this.timestamp = timestamp;
     }
 

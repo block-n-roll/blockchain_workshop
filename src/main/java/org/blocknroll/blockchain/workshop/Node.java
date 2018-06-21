@@ -1,13 +1,17 @@
 package org.blocknroll.blockchain.workshop;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.util.Collection;
 
 /**
  * This class represents the interface towards the cluster, thus declaring input / output interfaces.
  */
 public class Node {
-    private Collection<Fact> pendingFacts;
+    private Miner miner;
     private Chain chain;
+    Logger logger = LogManager.getLogger(Node.class);
 
     // -----------------------------------------------------------------------------------------------------------------
     // Cluster methods
@@ -17,7 +21,9 @@ public class Node {
      * Constructor.
      */
     public Node() {
-        // TODO
+        // TODO: Create the miner
+        // TODO: Create genesis block
+        // TODO: Create the chain
     }
 
     public void addToCluster() {
@@ -34,14 +40,22 @@ public class Node {
 
     /**
      * Add facts to be grouped and mined into a block.
-     * @param facts
+     * @param facts the facts to be mined.
      */
     public void addFacts(Collection<Fact> facts) {
-        // TODO
+        if (facts == null) {
+            throw new IllegalArgumentException("Cannot create a fact with null values");
+        }
+        Block block = miner.mine(facts);
+        if(requestProofOfWork(block)) {
+            addBlock(block);
+        }
     }
 
     /**
-     * Returns the chain (http request).
+     * Returns the chain.
+     *
+     * @return the Chain for this node.
      */
     public Chain getChain() {
         return chain;
@@ -49,13 +63,43 @@ public class Node {
 
     /**
      * Add a block to the chain.
+     * @param block the block to be send to verify and add to the chain.
      */
-    public void addBlock() {
+    public void addBlock(Block block) {
+        // Check inputs
+        if (block == null) {
+            throw new IllegalArgumentException("Cannot add a null block.");
+        }
 
+        // Check errors
+        if(chain.addBlock(block)) {
+            // TODO: Response ERROR
+        }
+
+        // TODO: Response OK
     }
 
-    public Collection<Fact> getPendingFacts() {
-        return pendingFacts;
+    /**
+     * Request to the cluster the proof of work for a given mined block
+     * @param block the block to be send to the cluster for verification.
+     */
+    public boolean requestProofOfWork(Block block) {
+        // Check inputs
+        if (block == null) {
+            throw new IllegalArgumentException("Cannot add a null block.");
+        }
+
+        // TODO:
+
+        return true;
     }
 
+    /**
+     * Synchronize the given chain with the current one.
+     * @param chain the chain to be synchronised.
+     */
+    public boolean verifyChain(Chain chain) {
+        // TODO:
+        return true;
+    }
 }

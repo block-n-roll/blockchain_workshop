@@ -1,12 +1,14 @@
 package org.blocknroll.blockchain.workshop;
 
+import com.sun.javaws.exceptions.InvalidArgumentException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This class represents a blockchain.
  */
-public class Chain {
+class Chain {
 
     private List<Block> chain = new ArrayList<Block>();
 
@@ -15,9 +17,9 @@ public class Chain {
      * @param genesis the genesis block.
      * @throws Exception in case that something when wrong here building the chain then raise an exception.
      */
-    public Chain(Block genesis) throws Exception {
+    Chain(Block genesis) throws IllegalArgumentException {
         if(!addBlock(genesis)) {
-            throw new Exception("Wrong genesis block!");
+            throw new IllegalArgumentException("Wrong genesis block!");
         }
     }
 
@@ -25,7 +27,7 @@ public class Chain {
      * Adds a block to the blockchain.
      * @param block the block to be added to the chain.
      */
-    public boolean addBlock(Block block) {
+    boolean addBlock(Block block) {
         boolean passed = proof(block);
         if(passed) {
             chain.add(block);
@@ -46,7 +48,7 @@ public class Chain {
      * @param block the block to be validated.
      * @return true if block is valid, false otherwise.
      */
-    public boolean proof(Block block) {
+    boolean proof(Block block) {
         // TODO: Verify block is the next one in the chain.
         // TODO: Proof that block is good.
         return false;
