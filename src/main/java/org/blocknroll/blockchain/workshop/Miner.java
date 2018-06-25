@@ -15,16 +15,11 @@ class Miner {
   /**
    * Constructor.
    */
-  Miner(ByteBuffer pubKey, ByteBuffer secKey, Chain chain) {
-    if ((pubKey == null) || (secKey == null) || (chain == null)) {
-      throw new IllegalArgumentException("Cannot create a miner with null values");
-    }
-    if ((!pubKey.isDirect()) || (!secKey.isDirect())) {
-      throw new IllegalArgumentException(
-          "and secret keys must be allocated in a direct memory buffer");
-    }
-    this.publicKey = pubKey;
-    this.secretKey = secKey;
+  Miner(Chain chain) {
+    // Load secret and public key stuff for the miner
+    this.publicKey = ByteBuffer.allocate(32);
+    this.secretKey = ByteBuffer.allocate(64);
+    CryptoUtil.generatePublicSecretKeys(publicKey, secretKey);
     this.chain = chain;
   }
 
@@ -35,11 +30,6 @@ class Miner {
    * @return the mined block.
    */
   Block mine(Collection<Fact> facts) {
-    // Check inputs
-    if ((facts == null) || (facts.size() == 0)) {
-      throw new IllegalArgumentException("Cannot create a block without facts.");
-    }
-
     // Create the block
     Block block = new Block(facts, chain.getLastBlock());
 

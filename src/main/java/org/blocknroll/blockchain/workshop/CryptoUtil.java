@@ -43,7 +43,7 @@ class CryptoUtil {
    */
   static ByteBuffer sign(Block block, ByteBuffer secKey) {
     // TODO: Sign the whole block info to proof that no byte is changed in the future.
-    return null;
+    return ByteBuffer.allocateDirect(0);
   }
 
   /**
@@ -63,10 +63,20 @@ class CryptoUtil {
    */
   static ByteBuffer calculateHash(Block doc) {
     // TODO:
-    return null;
+    return ByteBuffer.allocateDirect(0);
   }
 
   static Long getRandomLong() {
     return random.nextLong();
+  }
+
+  /**
+   * Generates a pair public and secret keys into the given buffers.
+   *
+   * @param pub the generated public key.
+   * @param sec the generated secret key.
+   */
+  static void generatePublicSecretKeys(ByteBuffer pub, ByteBuffer sec) {
+    // TODO:
   }
 }
