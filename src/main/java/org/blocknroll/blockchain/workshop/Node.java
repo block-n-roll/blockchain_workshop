@@ -1,38 +1,49 @@
 package org.blocknroll.blockchain.workshop;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 /**
- * This class represents the interface towards the cluster, thus declaring input / output
+ * This class represents the interface towards the peers, thus declaring input / output
  * interfaces.
  */
 public class Node {
 
-  Logger logger = LogManager.getLogger(Node.class);
+  private final Connector connector;
+  private Logger logger = LogManager.getLogger(Node.class);
+  private final String ip;
+  private final int port;
   private Miner miner;
   private Chain chain;
+  private Collection<Node> peers;
 
   // -----------------------------------------------------------------------------------------------------------------
-  // Cluster methods
+  // Connector methods
   // -----------------------------------------------------------------------------------------------------------------
 
   /**
    * Constructor.
+   *
+   * @param ip the IP where this node is running.
+   * @param port the port where this node is running.
    */
-  public Node() {
-    // TODO: Create the miner
-    // TODO: Create genesis block
-    // TODO: Create the chain
+  public Node(String ip, int port, Connector connector) {
+    this.ip = ip;
+    this.port = port;
+    this.connector = connector;
+    peers = new ArrayList<Node>();
+    chain = new Chain();
+    miner = new Miner(chain);
   }
 
-  public void addToCluster() {
-
-  }
-
-  public void removeFromCluster() {
-
+  /**
+   * Add a peer node to the cluster.
+   * @param node
+   */
+  public void addPeer(Node node) {
+    peers.add(node);
   }
 
   // -----------------------------------------------------------------------------------------------------------------
@@ -49,9 +60,38 @@ public class Node {
       throw new IllegalArgumentException("Cannot create a fact with null values");
     }
     Block block = miner.mine(facts);
-    if (requestProofOfWork(block)) {
-      addBlock(block);
+    addBlock(block);
+    broadcast(block);
+    // Return failure
+  }
+
+  /**
+   * Broadcast a message to all the nodes in the cluster.
+   * @param block the blocks to be sent to the cluster.
+   */
+  public void broadcast(Block block) {
+    for(Node peer: peers) {
+      connector.send(block, peer);
     }
+  }
+
+  /**
+   * Broadcast a message to all the nodes in the cluster.
+   * @param blocks the blocks to be sent to the cluster.
+   */
+  public void broadcast(Chain blocks) {
+    for(Node peer: peers) {
+      connector.send(blocks, peer);
+    }
+  }
+
+  /**
+   * Returns the latest block in this chain.
+   *
+   * @return the latest block in this chain.
+   */
+  public Block getLatestBlock() {
+    return chain.getLastBlock();
   }
 
   /**
@@ -62,6 +102,7 @@ public class Node {
   public Chain getChain() {
     return chain;
   }
+
 
   /**
    * Add a block to the chain.
@@ -80,22 +121,6 @@ public class Node {
     }
 
     // TODO: Response OK
-  }
-
-  /**
-   * Request to the cluster the proof of work for a given mined block
-   *
-   * @param block the block to be send to the cluster for verification.
-   */
-  public boolean requestProofOfWork(Block block) {
-    // Check inputs
-    if (block == null) {
-      throw new IllegalArgumentException("Cannot add a null block.");
-    }
-
-    // TODO:
-
-    return true;
   }
 
   /**

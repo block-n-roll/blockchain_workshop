@@ -2,8 +2,10 @@ package org.blocknroll.blockchain.workshop;
 
 import java.nio.ByteBuffer;
 
-class Fact {
+public class Fact {
 
+  private static final int DATA_SIZE_FIELD = 4;
+  private static final int SIG_SIZE_FIELD = 4;
   private ByteBuffer data;
   private ByteBuffer signature;
 
@@ -13,7 +15,7 @@ class Fact {
    * @param dat the data held by this fact.
    * @param sig the signature used to protect this fact.
    */
-  Fact(ByteBuffer dat, ByteBuffer sig) {
+  public Fact(ByteBuffer dat, ByteBuffer sig) {
     data = dat;
     signature = sig;
   }
@@ -34,5 +36,40 @@ class Fact {
    */
   ByteBuffer getSignature() {
     return signature;
+  }
+
+  /**
+   * Returns the size of this fact.
+   * @returnthe size of this fact.
+   */
+  int getSize() {
+    // Get the size of the data and signature and join the two buffers
+    data.rewind();
+    signature.rewind();
+    return DATA_SIZE_FIELD + SIG_SIZE_FIELD + data.limit() + signature.limit();
+  }
+
+  /**
+   * Returns the Fact serialised into an ByteBuffer object.
+   * @return the Fact serialised into an ByteBuffer object.
+   */
+  ByteBuffer serialise() {
+    // Get the size of the data and signature and join the two buffers
+    data.rewind();
+    signature.rewind();
+    ByteBuffer bb = ByteBuffer.allocateDirect(getSize());
+
+    // Write size of data and signature
+    bb.putInt(data.limit());
+    bb.putInt(signature.limit());
+
+    // Write the data
+    bb.put(data);
+    bb.put(signature);
+    return bb;
+  }
+
+  public boolean equals(Object other) {
+    return (other != null) && (serialise().equals(((Fact) other).serialise()));
   }
 }
