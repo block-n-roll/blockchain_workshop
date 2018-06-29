@@ -1,6 +1,3 @@
-#master branch
-[![Build status](https://travis-ci.com/block-n-roll/blockchain_workshop.svg?branch=master)]
-
 # blockchain_workshop
 Workshop describing the functionality of a blockchain (mining, consensus, conflict resolution, ...).
 
@@ -25,6 +22,9 @@ Workshop describing the functionality of a blockchain (mining, consensus, confli
                                | blocks:List<Block> |
                                +--------------------+
 ```
+
+# blockchain_workshop status
+![Build status](https://travis-ci.com/block-n-roll/blockchain_workshop.svg?branch=master)
 
 # Contribution
 We follow google code style for this repository.
