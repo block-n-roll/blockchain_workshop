@@ -1,135 +1,56 @@
 package org.blocknroll.blockchain.workshop;
 
-import java.util.ArrayList;
+import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import java.util.Collection;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import java.util.List;
+import java.util.Set;
 
-/**
- * This class represents the interface towards the peers, thus declaring input / output
- * interfaces.
- */
-public class Node {
+public interface Node {
 
-  private final Connector connector;
-  private Logger logger = LogManager.getLogger(Node.class);
-  private final String ip;
-  private final int port;
-  private Miner miner;
-  private Chain chain;
-  private Collection<Node> peers;
+  // -----------------------------------------------------------------------------------------------
+  // Requested by application level
+  // -----------------------------------------------------------------------------------------------
 
-  // -----------------------------------------------------------------------------------------------------------------
-  // Connector methods
-  // -----------------------------------------------------------------------------------------------------------------
+  void addFacts(Collection<Fact> facts) throws SodiumLibraryException;
+
+  Collection<Node> getPeers();
+
+  void addPeer(Node node);
 
   /**
-   * Constructor.
+   * Requests the whole chain.
+   * @return the chain.
+   */
+  Chain getChain();
+
+  // -----------------------------------------------------------------------------------------------
+  // Requested by node
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Sends a message to a peer node.
    *
-   * @param ip the IP where this node is running.
-   * @param port the port where this node is running.
+   * @param sender the sender node.
+   * @param blocks the blocks to be sent to the peer node.
    */
-  public Node(String ip, int port, Connector connector) {
-    this.ip = ip;
-    this.port = port;
-    this.connector = connector;
-    peers = new ArrayList<Node>();
-    chain = new Chain();
-    miner = new Miner(chain);
-  }
+  void send(Node sender, Chain blocks);
 
   /**
-   * Add a peer node to the cluster.
-   * @param node
+   * Obtain the latest block in the chain.
+   * @return the latest block in the chain.
    */
-  public void addPeer(Node node) {
-    peers.add(node);
-  }
-
-  // -----------------------------------------------------------------------------------------------------------------
-  // Blockchain methods
-  // -----------------------------------------------------------------------------------------------------------------
+  Block getLastBlock();
 
   /**
-   * Add facts to be grouped and mined into a block.
-   *
-   * @param facts the facts to be mined.
+   * Process a block requested from other peer node.
+   * @param sender the sender node.
+   * @param block
    */
-  public void addFacts(Collection<Fact> facts) {
-    if (facts == null) {
-      throw new IllegalArgumentException("Cannot create a fact with null values");
-    }
-    Block block = miner.mine(facts);
-    addBlock(block);
-    broadcast(block);
-    // Return failure
-  }
+  void processBlocks(Node sender, List<Block> block) throws SodiumLibraryException;
 
   /**
-   * Broadcast a message to all the nodes in the cluster.
-   * @param block the blocks to be sent to the cluster.
+   * Request the whole chain.
+   * @param sender the sender node.
    */
-  public void broadcast(Block block) {
-    for(Node peer: peers) {
-      connector.send(block, peer);
-    }
-  }
-
-  /**
-   * Broadcast a message to all the nodes in the cluster.
-   * @param blocks the blocks to be sent to the cluster.
-   */
-  public void broadcast(Chain blocks) {
-    for(Node peer: peers) {
-      connector.send(blocks, peer);
-    }
-  }
-
-  /**
-   * Returns the latest block in this chain.
-   *
-   * @return the latest block in this chain.
-   */
-  public Block getLatestBlock() {
-    return chain.getLastBlock();
-  }
-
-  /**
-   * Returns the chain.
-   *
-   * @return the Chain for this node.
-   */
-  public Chain getChain() {
-    return chain;
-  }
-
-
-  /**
-   * Add a block to the chain.
-   *
-   * @param block the block to be send to verify and add to the chain.
-   */
-  public void addBlock(Block block) {
-    // Check inputs
-    if (block == null) {
-      throw new IllegalArgumentException("Cannot add a null block.");
-    }
-
-    // Check errors
-    if (chain.addBlock(block)) {
-      // TODO: Response ERROR
-    }
-
-    // TODO: Response OK
-  }
-
-  /**
-   * Synchronize the given chain with the current one.
-   *
-   * @param chain the chain to be synchronised.
-   */
-  public boolean verifyChain(Chain chain) {
-    // TODO:
-    return true;
-  }
+  void requestChain(Node sender) throws SodiumLibraryException;
 }

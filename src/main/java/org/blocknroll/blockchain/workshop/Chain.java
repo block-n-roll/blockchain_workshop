@@ -1,7 +1,6 @@
 package org.blocknroll.blockchain.workshop;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -23,16 +22,20 @@ public class Chain {
   }
 
   /**
+   * Constructor from given blocks.
+   * @param blocks the blocks forming the chain.
+   */
+  Chain(List<Block> blocks) {
+    chain = blocks;
+  }
+
+  /**
    * Adds a block to the blockchain.
    *
    * @param block the block to be added to the chain.
    */
-  boolean addBlock(Block block) {
-    boolean passed = proof(block);
-    if (passed) {
+  void addBlock(Block block) {
       chain.add(block);
-    }
-    return passed;
   }
 
   /**
@@ -45,37 +48,21 @@ public class Chain {
   }
 
   /**
-   * Verifies that the given block has a valid hash and is the next one in the chain
-   *
-   * @param block the block to be validated.
-   * @return true if block is valid, false otherwise.
-   */
-  boolean proof(Block block) {
-    // TODO: Verify block is the next one in the chain.
-    Block lastBlock = getLastBlock();
-    if(block.getIdentifier() > lastBlock.getIdentifier()) {
-      if(block.getIdentifier() == (lastBlock.getIdentifier() + 1)) {
-        if (block.getPreviousHash().equals(lastBlock.getHash())) {
-          logger.debug("This is a good block!");
-          return true;
-        } else {
-          logger.error("Wrong hash for ");
-        }
-      } else {
-        logger.error("Received block is some steps above ... request the chain to the peers.");
-      }
-    } else {
-      logger.warn("The received block is in the past ... just ignore it.");
-    }
-    // TODO: Proof that block is good.
-    return false;
-  }
-
-  /**
    * Returns the list of blocks that forms the chain.
+   *
    * @return the list of blocks that forms the chain.
    */
   public List<Block> getBlocks() {
     return chain;
   }
+
+  /**
+   * Returns the number of blocks in the chain.
+   * @return the number of blocks in the chain.
+   */
+  public int getSize() {
+    return chain.size();
+  }
+
+
 }
