@@ -99,6 +99,10 @@ class CryptoUtil {
     return hash;
   }
 
+  /**
+   * Returns a random long number.
+   * @return a random long number.
+   */
   static Long getRandomLong() {
     return random.nextLong();
   }
@@ -113,6 +117,11 @@ class CryptoUtil {
     // TODO:
   }
 
+  /**
+   * Converts a byte buffer into an hexadecimal string.
+   * @param bb the byte buffer to be converted.
+   * @return hexadecimal string representing the given buffer.
+   */
   static String bufferToHexString(ByteBuffer bb) {
     bb.rewind();
     byte[] buff = new byte[bb.limit()];

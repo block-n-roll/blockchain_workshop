@@ -30,10 +30,6 @@ public class DummyProxyNode implements Node {
     node.addPeer(node);
   }
 
-  public void send(Node sender, Chain blocks) {
-    node.send(sender, blocks);
-  }
-
   public Block getLastBlock() {
     return node.getLastBlock();
   }

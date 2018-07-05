@@ -55,14 +55,21 @@ public class NodeImp implements Node {
     return peers;
   }
 
-  public void send(Node sender, Chain blocks) {
-
-  }
-
+  /**
+   *
+   * @param sender the sender node.
+   * @param blocks the blocks to be processed.
+   * @throws SodiumLibraryException
+   */
   public void processBlocks(Node sender, List<Block> blocks) throws SodiumLibraryException {
     processBlockResponse(sender, blocks, chain.getLastBlock());
   }
 
+  /**
+   * This is invoked when other peers are requesting the chain.
+   * @param sender the sender node.
+   * @throws SodiumLibraryException
+   */
   public void requestChain(Node sender) throws SodiumLibraryException {
     sender.processBlocks(this, chain.getBlocks());
   }
