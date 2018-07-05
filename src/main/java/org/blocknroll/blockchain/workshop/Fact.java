@@ -40,6 +40,7 @@ public class Fact {
 
   /**
    * Returns the size of this fact.
+   *
    * @returnthe size of this fact.
    */
   int getSize() {
@@ -51,6 +52,7 @@ public class Fact {
 
   /**
    * Returns the Fact serialised into an ByteBuffer object.
+   *
    * @return the Fact serialised into an ByteBuffer object.
    */
   ByteBuffer serialise() {

@@ -1,5 +1,6 @@
 package org.blocknroll.blockchain.workshop;
 
+import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
@@ -29,7 +30,7 @@ class Miner {
    * @param facts the facts to be mined inside the block.
    * @return the mined block.
    */
-  Block mine(Collection<Fact> facts) {
+  Block mine(Collection<Fact> facts) throws SodiumLibraryException {
     // Create the block
     Block block = new Block(facts, chain.getLastBlock());
 
