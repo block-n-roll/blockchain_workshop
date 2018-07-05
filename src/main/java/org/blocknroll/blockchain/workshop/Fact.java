@@ -2,6 +2,9 @@ package org.blocknroll.blockchain.workshop;
 
 import java.nio.ByteBuffer;
 
+/**
+ * This represents a fact to be mined into a block.
+ */
 public class Fact {
 
   private static final int DATA_SIZE_FIELD = 4;
@@ -71,6 +74,11 @@ public class Fact {
     return bb;
   }
 
+  /**
+   * Compares with another fact.
+   * @param other another fact.
+   * @return true if both facts are equal, false otherwise.
+   */
   public boolean equals(Object other) {
     return (other != null) && (serialise().equals(((Fact) other).serialise()));
   }

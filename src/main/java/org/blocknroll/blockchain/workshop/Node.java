@@ -3,18 +3,33 @@ package org.blocknroll.blockchain.workshop;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
+/**
+ * This is the interface to be implemented by a node.
+ */
 public interface Node {
 
   // -----------------------------------------------------------------------------------------------
   // Requested by application level
   // -----------------------------------------------------------------------------------------------
 
+  /**
+   * Add facts into the blockchain.
+   * @param facts the collection of facts to be mined into a blockchain.
+   * @throws SodiumLibraryException
+   */
   void addFacts(Collection<Fact> facts) throws SodiumLibraryException;
 
+  /**
+   * Returns the peers linked to this node.
+   * @return the peers linked to this node.
+   */
   Collection<Node> getPeers();
 
+  /**
+   * Adds a peer to this node.
+   * @param node the node to be linked to this one.
+   */
   void addPeer(Node node);
 
   /**
@@ -26,14 +41,6 @@ public interface Node {
   // -----------------------------------------------------------------------------------------------
   // Requested by node
   // -----------------------------------------------------------------------------------------------
-
-  /**
-   * Sends a message to a peer node.
-   *
-   * @param sender the sender node.
-   * @param blocks the blocks to be sent to the peer node.
-   */
-  void send(Node sender, Chain blocks);
 
   /**
    * Obtain the latest block in the chain.

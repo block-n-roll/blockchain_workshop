@@ -24,7 +24,8 @@
       <groupId>com.muquit.libsodiumjna</groupId>
       <artifactId>libsodium-jna</artifactId>
       <version>1.0.4</version>
-    </dependency>  </dependencies>
+    </dependency>
+  </dependencies>
 
 
 </project>
