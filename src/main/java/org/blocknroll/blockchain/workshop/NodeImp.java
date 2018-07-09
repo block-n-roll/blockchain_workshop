@@ -49,6 +49,7 @@ public class NodeImp implements Node {
 
   /**
    * Returns the peers connected to this node.
+   *
    * @return the peers connected to this node.
    */
   public Collection<Node> getPeers() {
@@ -56,10 +57,8 @@ public class NodeImp implements Node {
   }
 
   /**
-   *
    * @param sender the sender node.
    * @param blocks the blocks to be processed.
-   * @throws SodiumLibraryException
    */
   public void processBlocks(Node sender, List<Block> blocks) throws SodiumLibraryException {
     processBlockResponse(sender, blocks, chain.getLastBlock());
@@ -67,8 +66,8 @@ public class NodeImp implements Node {
 
   /**
    * This is invoked when other peers are requesting the chain.
+   *
    * @param sender the sender node.
-   * @throws SodiumLibraryException
    */
   public void requestChain(Node sender) throws SodiumLibraryException {
     sender.processBlocks(this, chain.getBlocks());
@@ -103,7 +102,7 @@ public class NodeImp implements Node {
     // Mine block, verify it and add it to the chain.
     Block block = miner.mine(facts);
     logger.warn(CryptoUtil.bufferToHexString(block.getHash()));
-    if(verifyBlock(block, chain.getLastBlock())) {
+    if (verifyBlock(block, chain.getLastBlock())) {
       chain.addBlock(block);
       notifyNewBlock(block);
       // TODO: Response OK
@@ -141,7 +140,7 @@ public class NodeImp implements Node {
     if (block.getIdentifier() > previous.getIdentifier()) {
       block.getPreviousHash().rewind();
       previous.getHash().rewind();
-      if(block.getPreviousHash().equals(previous.getHash())) {
+      if (block.getPreviousHash().equals(previous.getHash())) {
         logger.debug("This is a good block!");
         chain.addBlock(block);
         notifyNewBlock(block);
@@ -151,7 +150,7 @@ public class NodeImp implements Node {
         sender.requestChain(this);
       } else {
         logger.warn("Received blockchain is longer, replace current one.");
-        if(verifyChain(blocks)) {
+        if (verifyChain(blocks)) {
           chain = new Chain(blocks);
         }
       }
@@ -169,9 +168,9 @@ public class NodeImp implements Node {
   public boolean verifyChain(List<Block> blocks) throws SodiumLibraryException {
     Iterator<Block> iter = blocks.iterator();
     Block previous = iter.next();
-    while(iter.hasNext()) {
+    while (iter.hasNext()) {
       Block block = iter.next();
-      if(!verifyBlock(block, previous)) {
+      if (!verifyBlock(block, previous)) {
         return false;
       }
       previous = block;

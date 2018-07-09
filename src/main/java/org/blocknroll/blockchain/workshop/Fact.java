@@ -76,6 +76,7 @@ public class Fact {
 
   /**
    * Compares with another fact.
+   *
    * @param other another fact.
    * @return true if both facts are equal, false otherwise.
    */

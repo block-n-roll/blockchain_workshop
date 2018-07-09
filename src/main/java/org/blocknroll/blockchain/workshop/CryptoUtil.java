@@ -13,16 +13,17 @@ import org.apache.log4j.Logger;
  */
 class CryptoUtil {
 
-  private static Random random = new Random();
-  private static Logger logger = LogManager.getLogger(NodeImp.class);
   static final int HASH_SIZE = 32;
   static final int SIGNATURE_SIZE = 64;
+  private static Random random = new Random();
+  private static Logger logger = LogManager.getLogger(NodeImp.class);
 
   static {
     SodiumLibrary.setLibraryPath("lib/libsodium.dll");
   }
 
-  private static ByteBuffer sign(ByteBuffer data, ByteBuffer secretKey) throws SodiumLibraryException {
+  private static ByteBuffer sign(ByteBuffer data, ByteBuffer secretKey)
+      throws SodiumLibraryException {
     data.rewind();
     secretKey.rewind();
     byte[] dat = new byte[data.limit()];
@@ -101,6 +102,7 @@ class CryptoUtil {
 
   /**
    * Returns a random long number.
+   *
    * @return a random long number.
    */
   static Long getRandomLong() {
@@ -119,6 +121,7 @@ class CryptoUtil {
 
   /**
    * Converts a byte buffer into an hexadecimal string.
+   *
    * @param bb the byte buffer to be converted.
    * @return hexadecimal string representing the given buffer.
    */
