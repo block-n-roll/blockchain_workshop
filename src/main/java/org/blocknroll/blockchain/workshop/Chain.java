@@ -2,25 +2,32 @@ package org.blocknroll.blockchain.workshop;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * This class represents a blockchain.
  */
-class Chain {
+public class Chain {
 
   private List<Block> chain = new ArrayList<Block>();
+  private Logger logger = LogManager.getLogger(Chain.class);
 
   /**
    * Constructor.
-   *
-   * @param genesis the genesis block.
-   * @throws Exception in case that something when wrong here building the chain then raise an
-   * exception.
    */
-  Chain(Block genesis) throws IllegalArgumentException {
-    if (!addBlock(genesis)) {
-      throw new IllegalArgumentException("Wrong genesis block!");
-    }
+  Chain() {
+    // TODO: replace by hardcoded genesis block
+    chain.add(new Block());
+  }
+
+  /**
+   * Constructor from given blocks.
+   *
+   * @param blocks the blocks forming the chain.
+   */
+  Chain(List<Block> blocks) {
+    chain = blocks;
   }
 
   /**
@@ -28,12 +35,8 @@ class Chain {
    *
    * @param block the block to be added to the chain.
    */
-  boolean addBlock(Block block) {
-    boolean passed = proof(block);
-    if (passed) {
-      chain.add(block);
-    }
-    return passed;
+  void addBlock(Block block) {
+    chain.add(block);
   }
 
   /**
@@ -46,14 +49,22 @@ class Chain {
   }
 
   /**
-   * Verifies that the given block has a valid hash and is the next one in the chain
+   * Returns the list of blocks that forms the chain.
    *
-   * @param block the block to be validated.
-   * @return true if block is valid, false otherwise.
+   * @return the list of blocks that forms the chain.
    */
-  boolean proof(Block block) {
-    // TODO: Verify block is the next one in the chain.
-    // TODO: Proof that block is good.
-    return false;
+  public List<Block> getBlocks() {
+    return chain;
   }
+
+  /**
+   * Returns the number of blocks in the chain.
+   *
+   * @return the number of blocks in the chain.
+   */
+  public int getSize() {
+    return chain.size();
+  }
+
+
 }

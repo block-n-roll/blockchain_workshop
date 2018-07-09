@@ -1,110 +1,68 @@
 package org.blocknroll.blockchain.workshop;
 
+import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import java.util.Collection;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import java.util.List;
 
 /**
- * This class represents the interface towards the cluster, thus declaring input / output
- * interfaces.
+ * This is the interface to be implemented by a node.
  */
-public class Node {
+public interface Node {
 
-  Logger logger = LogManager.getLogger(Node.class);
-  private Miner miner;
-  private Chain chain;
-
-  // -----------------------------------------------------------------------------------------------------------------
-  // Cluster methods
-  // -----------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
+  // Requested by application level
+  // -----------------------------------------------------------------------------------------------
 
   /**
-   * Constructor.
-   */
-  public Node() {
-    // TODO: Create the miner
-    // TODO: Create genesis block
-    // TODO: Create the chain
-  }
-
-  public void addToCluster() {
-
-  }
-
-  public void removeFromCluster() {
-
-  }
-
-  // -----------------------------------------------------------------------------------------------------------------
-  // Blockchain methods
-  // -----------------------------------------------------------------------------------------------------------------
-
-  /**
-   * Add facts to be grouped and mined into a block.
+   * Add facts into the blockchain.
    *
-   * @param facts the facts to be mined.
+   * @param facts the collection of facts to be mined into a blockchain.
    */
-  public void addFacts(Collection<Fact> facts) {
-    if (facts == null) {
-      throw new IllegalArgumentException("Cannot create a fact with null values");
-    }
-    Block block = miner.mine(facts);
-    if (requestProofOfWork(block)) {
-      addBlock(block);
-    }
-  }
+  void addFacts(Collection<Fact> facts) throws SodiumLibraryException;
 
   /**
-   * Returns the chain.
+   * Returns the peers linked to this node.
    *
-   * @return the Chain for this node.
+   * @return the peers linked to this node.
    */
-  public Chain getChain() {
-    return chain;
-  }
+  Collection<Node> getPeers();
 
   /**
-   * Add a block to the chain.
+   * Adds a peer to this node.
    *
-   * @param block the block to be send to verify and add to the chain.
+   * @param node the node to be linked to this one.
    */
-  public void addBlock(Block block) {
-    // Check inputs
-    if (block == null) {
-      throw new IllegalArgumentException("Cannot add a null block.");
-    }
-
-    // Check errors
-    if (chain.addBlock(block)) {
-      // TODO: Response ERROR
-    }
-
-    // TODO: Response OK
-  }
+  void addPeer(Node node);
 
   /**
-   * Request to the cluster the proof of work for a given mined block
+   * Requests the whole chain.
    *
-   * @param block the block to be send to the cluster for verification.
+   * @return the chain.
    */
-  public boolean requestProofOfWork(Block block) {
-    // Check inputs
-    if (block == null) {
-      throw new IllegalArgumentException("Cannot add a null block.");
-    }
+  Chain getChain();
 
-    // TODO:
-
-    return true;
-  }
+  // -----------------------------------------------------------------------------------------------
+  // Requested by node
+  // -----------------------------------------------------------------------------------------------
 
   /**
-   * Synchronize the given chain with the current one.
+   * Obtain the latest block in the chain.
    *
-   * @param chain the chain to be synchronised.
+   * @return the latest block in the chain.
    */
-  public boolean verifyChain(Chain chain) {
-    // TODO:
-    return true;
-  }
+  Block getLastBlock();
+
+  /**
+   * Process a block requested from other peer node.
+   *
+   * @param sender the sender node.
+   */
+  void processBlocks(Node sender, List<Block> block) throws SodiumLibraryException;
+
+  /**
+   * Request the whole chain.
+   *
+   * @param sender the sender node.
+   */
+  void requestChain(Node sender) throws SodiumLibraryException;
 }
