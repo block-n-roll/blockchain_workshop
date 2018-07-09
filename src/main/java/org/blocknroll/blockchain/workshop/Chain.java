@@ -23,6 +23,7 @@ public class Chain {
 
   /**
    * Constructor from given blocks.
+   *
    * @param blocks the blocks forming the chain.
    */
   Chain(List<Block> blocks) {
@@ -35,7 +36,7 @@ public class Chain {
    * @param block the block to be added to the chain.
    */
   void addBlock(Block block) {
-      chain.add(block);
+    chain.add(block);
   }
 
   /**
@@ -58,6 +59,7 @@ public class Chain {
 
   /**
    * Returns the number of blocks in the chain.
+   *
    * @return the number of blocks in the chain.
    */
   public int getSize() {

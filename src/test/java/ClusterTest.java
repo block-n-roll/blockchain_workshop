@@ -1,6 +1,5 @@
 import static org.junit.Assert.assertEquals;
 
-import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,13 +33,13 @@ public class ClusterTest {
 
   @Test
   public void addPeer() {
-    assertEquals(nodeOne.getPeers().size() ,0);
-    assertEquals(nodeOne.getPeers().size() ,0);
+    assertEquals(nodeOne.getPeers().size(), 0);
+    assertEquals(nodeOne.getPeers().size(), 0);
     nodeOne.addPeer(proxyTwo);
-    assertEquals(nodeOne.getPeers().size() ,1);
-    assertEquals(nodeTwo.getPeers().size() ,0);
+    assertEquals(nodeOne.getPeers().size(), 1);
+    assertEquals(nodeTwo.getPeers().size(), 0);
     nodeTwo.addPeer(proxyOne);
-    assertEquals(nodeOne.getPeers().size() ,1);
-    assertEquals(nodeTwo.getPeers().size() ,1);
+    assertEquals(nodeOne.getPeers().size(), 1);
+    assertEquals(nodeTwo.getPeers().size(), 1);
   }
 }
