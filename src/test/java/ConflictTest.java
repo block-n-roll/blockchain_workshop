@@ -2,6 +2,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +26,7 @@ public class ConflictTest {
   }
 
   @Before
-  public void setup() {
+  public void setup() throws IOException, SodiumLibraryException {
     // Create nodes
     nodeOne = new NodeImp("localhost", 1111);
     proxyOne = new DummyProxyNode(nodeOne);
