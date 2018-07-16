@@ -62,7 +62,7 @@ public class Fact {
     // Get the size of the data and signature and join the two buffers
     data.rewind();
     signature.rewind();
-    ByteBuffer bb = ByteBuffer.allocateDirect(getSize());
+    ByteBuffer bb = ByteBuffer.allocate(getSize());
 
     // Write size of data and signature
     bb.putInt(data.limit());

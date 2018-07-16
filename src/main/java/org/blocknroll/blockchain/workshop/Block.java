@@ -6,17 +6,19 @@ import static org.blocknroll.blockchain.workshop.CryptoUtil.SIGNATURE_SIZE;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * This class represents a possible block in the chain.
  */
 public class Block {
 
-  public static final int FACTS_SIZE_FIELD = 4;
+  private static final int FACTS_SIZE_FIELD = 4;
   private static final int ID_SIZE_FIELD = 4;
   private static final int NONCE_SIZE_FIELD = 4;
   private static final int TIMESTAMP_SIZE_FIELD = 4;
-
+  private static final Logger logger = LogManager.getLogger(Block.class);
   private Long identifier;
   private Collection<Fact> facts;
   private ByteBuffer previousHash;
@@ -32,11 +34,11 @@ public class Block {
   Block() {
     // Init Genesis block
     this.identifier = 0L;
-    this.facts = new ArrayList<Fact>();
-    this.previousHash = ByteBuffer.allocateDirect(HASH_SIZE);
+    this.facts = new ArrayList<>();
+    this.previousHash = ByteBuffer.allocate(HASH_SIZE);
     this.nonce = 0L;
-    this.hash = ByteBuffer.allocateDirect(HASH_SIZE);
-    this.signature = ByteBuffer.allocateDirect(SIGNATURE_SIZE);
+    this.hash = ByteBuffer.allocate(HASH_SIZE);
+    this.signature = ByteBuffer.allocate(SIGNATURE_SIZE);
   }
 
   /**
@@ -46,15 +48,14 @@ public class Block {
    * @param prev the previous block.
    */
   Block(Collection<Fact> facts, Block prev) {
+    logger.debug("Creating block pointing to previous " + CryptoUtil.bufferToHexString(prev.hash));
     // Init block's members non related to mining process.
     this.identifier = prev.identifier + 1;
     this.facts = facts;
-    this.previousHash = ByteBuffer.allocateDirect(HASH_SIZE);
+    this.previousHash = ByteBuffer.allocate(HASH_SIZE);
     this.previousHash.put(prev.hash);
-    this.hash = ByteBuffer.allocateDirect(HASH_SIZE);
-    this.signature = ByteBuffer.allocateDirect(SIGNATURE_SIZE);
-    CryptoUtil.bufferToHexString(previousHash);
-    CryptoUtil.bufferToHexString(prev.hash);
+    this.hash = ByteBuffer.allocate(HASH_SIZE);
+    this.signature = ByteBuffer.allocate(SIGNATURE_SIZE);
   }
 
   /**
@@ -79,7 +80,6 @@ public class Block {
    * Sets the nonce for this block.
    *
    * @param nonce the nonce for this block.
-   * @return this block.
    */
   void setNonce(Long nonce) {
     this.nonce = nonce;
@@ -161,7 +161,7 @@ public class Block {
   /**
    * Returns the size of the facts.
    */
-  int getFactsSize() {
+  private int getFactsSize() {
     int size = 0;
     for (Fact f : facts) {
       size += f.getSize();
@@ -185,7 +185,7 @@ public class Block {
    * @return ByteBuffer containing this block.
    */
   ByteBuffer serialise() {
-    ByteBuffer bb = ByteBuffer.allocateDirect(getSize());
+    ByteBuffer bb = ByteBuffer.allocate(getSize());
     bb.putLong(identifier);
     bb.putInt(facts.size());
     for (Fact f : facts) {
@@ -193,8 +193,11 @@ public class Block {
     }
     bb.putLong(nonce);
     bb.putLong(timestamp);
+    previousHash.rewind();
     bb.put(previousHash);
+    hash.rewind();
     bb.put(hash);
+    signature.rewind();
     bb.put(signature);
     bb.rewind();
     return bb;
