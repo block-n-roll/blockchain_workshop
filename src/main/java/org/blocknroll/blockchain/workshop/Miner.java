@@ -1,6 +1,7 @@
 package org.blocknroll.blockchain.workshop;
 
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
@@ -16,11 +17,10 @@ class Miner {
   /**
    * Constructor.
    */
-  Miner(Chain chain) {
+  Miner(Chain chain) throws IOException {
     // Load secret and public key stuff for the miner
-    this.publicKey = ByteBuffer.allocate(32);
-    this.secretKey = ByteBuffer.allocate(64);
-    CryptoUtil.generatePublicSecretKeys(publicKey, secretKey);
+    publicKey = CryptoUtil.loadKey("keys/pub.key");
+    secretKey = CryptoUtil.loadKey("keys/sec.key");
     this.chain = chain;
   }
 

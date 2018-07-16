@@ -1,6 +1,9 @@
 package org.blocknroll.blockchain.workshop;
 
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,10 +34,17 @@ public class NodeImp implements Node {
    * @param ip the IP where this node is running.
    * @param port the port where this node is running.
    */
-  public NodeImp(String ip, int port) {
+  public NodeImp(String ip, int port) throws IOException, SodiumLibraryException {
+    // Generate the key pair if directory does not exist
+    if(!Files.isDirectory(Paths.get("keys"))) {
+      Files.createDirectory(Paths.get("keys"));
+      CryptoUtil.generatePublicSecretKeys("keys/pub.key", "keys/sec.key");
+    }
+
+    // Initialise members
     this.ip = ip;
     this.port = port;
-    peers = new ArrayList<Node>();
+    peers = new ArrayList<>();
     chain = new Chain();
     miner = new Miner(chain);
   }
