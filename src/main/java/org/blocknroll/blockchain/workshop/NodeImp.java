@@ -36,7 +36,7 @@ public class NodeImp implements Node {
    */
   public NodeImp(String ip, int port) throws IOException, SodiumLibraryException {
     // Generate the key pair if directory does not exist
-    if(!Files.isDirectory(Paths.get("keys"))) {
+    if (!Files.isDirectory(Paths.get("keys"))) {
       Files.createDirectory(Paths.get("keys"));
       CryptoUtil.generatePublicSecretKeys("keys/pub.key", "keys/sec.key");
     }
@@ -110,9 +110,9 @@ public class NodeImp implements Node {
     }
 
     // Mine block, verify it and add it to the chain.
-    Block block = miner.mine(facts);
-    logger.warn(CryptoUtil.bufferToHexString(block.getHash()));
+    Block block = miner.mine(facts, 2);
     if (verifyBlock(block, chain.getLastBlock())) {
+      logger.info("Adding block " + block.getIdentifier() + " to the chain.");
       chain.addBlock(block);
       notifyNewBlock(block);
       // TODO: Response OK

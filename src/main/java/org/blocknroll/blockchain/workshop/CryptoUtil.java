@@ -3,10 +3,6 @@ package org.blocknroll.blockchain.workshop;
 import com.muquit.libsodiumjna.SodiumKeyPair;
 import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -24,7 +20,7 @@ class CryptoUtil {
   static final int HASH_SIZE = 32;
   static final int SIGNATURE_SIZE = 64;
   private static final Random random = new Random();
-  private static final Logger logger = LogManager.getLogger(NodeImp.class);
+  private static final Logger logger = LogManager.getLogger(CryptoUtil.class);
 
   static {
     SodiumLibrary.setLibraryPath("lib/libsodium.dll");
@@ -32,6 +28,7 @@ class CryptoUtil {
 
   /**
    * Signs a chunk of data with the private key.
+   *
    * @param data the data to be signed.
    * @param secretKey the secret key.
    * @return the signature for the data.
@@ -47,7 +44,7 @@ class CryptoUtil {
     byte[] sec = new byte[secretKey.limit()];
     secretKey.get(sec);
     byte[] sig = SodiumLibrary.cryptoSignDetached(dat, sec);
-    ByteBuffer signature = ByteBuffer.allocateDirect(sig.length);
+    ByteBuffer signature = ByteBuffer.allocate(sig.length);
     signature.put(sig);
     logger.debug("Created signature: " + bufferToHexString(signature));
     return signature;
@@ -55,6 +52,7 @@ class CryptoUtil {
 
   /**
    * Verify a message and signature with a given public key
+   *
    * @param signature the signature.
    * @param data the content to be verified.
    * @param pubKey the public key.
@@ -129,11 +127,10 @@ class CryptoUtil {
     // Clean the hash and signatures cannot be considered on hash calculations
     byte[] payload = new byte[doc.getSize() - HASH_SIZE - SIGNATURE_SIZE];
     doc.serialise().get(payload);
-    byte[] h = SodiumLibrary.cryptoGenerichash(payload, 32);
-    ByteBuffer hash = ByteBuffer.allocateDirect(h.length);
+    byte[] h = SodiumLibrary.cryptoGenerichash(payload, HASH_SIZE);
+    ByteBuffer hash = ByteBuffer.allocate(h.length);
     hash.put(h);
     hash.rewind();
-    bufferToHexString(hash);
     return hash;
   }
 
@@ -156,6 +153,7 @@ class CryptoUtil {
     key.rewind();
     return key;
   }
+
   /**
    * Generates a pair public and secret keys into the given buffers.
    */
