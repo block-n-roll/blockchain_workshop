@@ -18,7 +18,7 @@ public class Block {
   private static final int ID_SIZE_FIELD = 4;
   private static final int NONCE_SIZE_FIELD = 4;
   private static final int TIMESTAMP_SIZE_FIELD = 4;
-
+  private static final Logger logger = LogManager.getLogger(Block.class);
   private Long identifier;
   private Collection<Fact> facts;
   private ByteBuffer previousHash;
@@ -26,7 +26,6 @@ public class Block {
   private ByteBuffer hash;
   private ByteBuffer signature;
   private Long timestamp;
-  private static final Logger logger = LogManager.getLogger(Block.class);
 
   /**
    * Constructor for genesis block.
