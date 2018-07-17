@@ -22,8 +22,9 @@ public interface NodeMessages {
     }
   }
 
-  public static class AddFacts implements Serializable{
-    public AddFacts (String filename)
-    {}
+  public static class AddFacts implements Serializable {
+
+    public AddFacts(String filename) {
+    }
   }
 }

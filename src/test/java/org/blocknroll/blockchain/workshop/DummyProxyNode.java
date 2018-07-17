@@ -4,10 +4,6 @@ import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import org.blocknroll.blockchain.workshop.Block;
-import org.blocknroll.blockchain.workshop.Chain;
-import org.blocknroll.blockchain.workshop.Fact;
-import org.blocknroll.blockchain.workshop.Node;
 
 public class DummyProxyNode implements Node {
 

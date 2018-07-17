@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import scala.concurrent.BlockContext;
 
 /**
  * This class represents the interface towards the peers, thus declaring input / output interfaces.

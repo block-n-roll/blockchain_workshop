@@ -19,6 +19,8 @@ import java.net.InetSocketAddress;
 
 public class NodeActor extends AbstractActor {
 
+  public final static String DEFAULT_HOST = "127.0.0.1";
+  public final static int DEFAULT_PORT = 2550;
   // some constants
   private final static String HELP = "\n".join(
       "Usage:",
@@ -30,16 +32,12 @@ public class NodeActor extends AbstractActor {
       "",
       "Notes:",
       "   A PEER_NODE has the form IP:PORT, assuming localhost when IP is not given.");
-  public final static String DEFAULT_HOST = "127.0.0.1";
-  public final static int DEFAULT_PORT = 2550;
-
-  // cluster objects
-  private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-  private Cluster cluster = Cluster.get(getContext().system());
-
   // arguments
   public static Integer nodePort = null;
   public static InetSocketAddress peerAddress = null;
+  // cluster objects
+  private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
+  private Cluster cluster = Cluster.get(getContext().system());
 
   public static InetSocketAddress parseAddress(String address) {
     String host = DEFAULT_HOST;
@@ -56,54 +54,6 @@ public class NodeActor extends AbstractActor {
       }
     }
     return new InetSocketAddress(host, port);
-  }
-
-  //subscribe to cluster changes
-  @Override
-  public void preStart() {
-    cluster.subscribe(self(), ClusterEvent.initialStateAsEvents(),
-        MemberEvent.class, UnreachableMember.class);
-  }
-
-  //re-subscribe when restart
-  @Override
-  public void postStop() {
-    cluster.unsubscribe(self());
-  }
-
-  @Override
-  public Receive createReceive() {
-    return receiveBuilder()
-        .match(String.class, msg -> {
-              System.out.println("-------------------------------------------------");
-              System.out.println(msg);
-              System.out.println("-------------------------------------------------");
-            }
-        )
-        .match(NodeMessages.Join.class, msg -> {
-          System.out.println("Joining to " + msg.toString() + "...");
-          Address address = new Address("akka.tcp", "ClusterSystem", msg.host, msg.port);
-          cluster.join(address);
-        })
-        .match(NodeMessages.Leave.class, msg -> {
-          System.out.println("Leaving cluster...");
-          cluster.leave(cluster.selfAddress());
-        })
-        /*
-        .match(MemberUp.class, mUp -> {
-          log.info("Member is Up: {}", mUp.member());
-        })
-        .match(UnreachableMember.class, mUnreachable -> {
-          log.info("Member detected as unreachable: {}", mUnreachable.member());
-        })
-        .match(MemberRemoved.class, mRemoved -> {
-          log.info("Member is Removed: {}", mRemoved.member());
-        })
-        .match(MemberEvent.class, message -> {
-          log.info(message.toString());
-          // ignore
-        })*/
-        .build();
   }
 
   private static void checkArgs(String[] args) {
@@ -161,10 +111,60 @@ public class NodeActor extends AbstractActor {
     ActorRef node = system.actorOf(Props.create(NodeActor.class), "clusterListener");
     System.out.println("LAMADREQUE: " + node.path());
     if (peerAddress != null) {
-      String uri = "akka.tcp://ClusterSystem@" + peerAddress.getHostName() + ":" + peerAddress.getPort() + "/user/clusterListener";
+      String uri =
+          "akka.tcp://ClusterSystem@" + peerAddress.getHostName() + ":" + peerAddress.getPort()
+              + "/user/clusterListener";
       System.out.println("Connecting to cluster at " + uri + "...");
       ActorSelection selection = system.actorSelection(uri);
       selection.tell(new NodeMessages.Join(peerAddress.getHostName(), peerAddress.getPort()), node);
     }
+  }
+
+  //subscribe to cluster changes
+  @Override
+  public void preStart() {
+    cluster.subscribe(self(), ClusterEvent.initialStateAsEvents(),
+        MemberEvent.class, UnreachableMember.class);
+  }
+
+  //re-subscribe when restart
+  @Override
+  public void postStop() {
+    cluster.unsubscribe(self());
+  }
+
+  @Override
+  public Receive createReceive() {
+    return receiveBuilder()
+        .match(String.class, msg -> {
+              System.out.println("-------------------------------------------------");
+              System.out.println(msg);
+              System.out.println("-------------------------------------------------");
+            }
+        )
+        .match(NodeMessages.Join.class, msg -> {
+          System.out.println("Joining to " + msg.toString() + "...");
+          Address address = new Address("akka.tcp", "ClusterSystem", msg.host, msg.port);
+          cluster.join(address);
+        })
+        .match(NodeMessages.Leave.class, msg -> {
+          System.out.println("Leaving cluster...");
+          cluster.leave(cluster.selfAddress());
+        })
+        /*
+        .match(MemberUp.class, mUp -> {
+          log.info("Member is Up: {}", mUp.member());
+        })
+        .match(UnreachableMember.class, mUnreachable -> {
+          log.info("Member detected as unreachable: {}", mUnreachable.member());
+        })
+        .match(MemberRemoved.class, mRemoved -> {
+          log.info("Member is Removed: {}", mRemoved.member());
+        })
+        .match(MemberEvent.class, message -> {
+          log.info(message.toString());
+          // ignore
+        })*/
+        .build();
   }
 }
