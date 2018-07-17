@@ -1,6 +1,7 @@
 package org.blocknroll.blockchain.workshop;
 
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public interface Node {
    *
    * @param facts the collection of facts to be mined into a blockchain.
    */
-  void addFacts(Collection<Fact> facts) throws SodiumLibraryException;
+  void addFacts(Collection<Fact> facts) throws SodiumLibraryException, IOException;
 
   /**
    * Returns the peers linked to this node.
@@ -57,12 +58,12 @@ public interface Node {
    *
    * @param sender the sender node.
    */
-  void processBlocks(Node sender, List<Block> block) throws SodiumLibraryException;
+  void processBlocks(Node sender, List<Block> block) throws SodiumLibraryException, IOException;
 
   /**
    * Request the whole chain.
    *
    * @param sender the sender node.
    */
-  void requestChain(Node sender) throws SodiumLibraryException;
+  void requestChain(Node sender) throws SodiumLibraryException, IOException;
 }

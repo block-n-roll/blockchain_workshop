@@ -2,10 +2,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.StreamSupport;
+import org.blocknroll.blockchain.workshop.Block;
 import org.blocknroll.blockchain.workshop.Fact;
 import org.blocknroll.blockchain.workshop.Node;
 import org.blocknroll.blockchain.workshop.NodeImp;
@@ -20,13 +29,19 @@ public class ConflictTest {
   private Node proxyTwo;
 
   private Collection<Fact> createFacts() {
-    Collection<Fact> facts = new ArrayList<Fact>();
+    Collection<Fact> facts = new ArrayList<>();
     facts.add(new Fact(ByteBuffer.allocate(0), ByteBuffer.allocate(0)));
     return facts;
   }
 
   @Before
   public void setup() throws IOException, SodiumLibraryException {
+    // Clean up chains
+    Files.walk(Paths.get("chain"))
+        .sorted(Comparator.reverseOrder())
+        .map(Path::toFile)
+        .forEach(File::delete);
+
     // Create nodes
     nodeOne = new NodeImp("localhost", 1111);
     proxyOne = new DummyProxyNode(nodeOne);
@@ -35,7 +50,7 @@ public class ConflictTest {
   }
 
   @Test
-  public void testDifferentChainsDifferentSizes() throws SodiumLibraryException {
+  public void testDifferentChainsDifferentSizes() throws SodiumLibraryException, IOException {
     // Add two blocks to the node
     nodeOne.addFacts(createFacts());
     nodeOne.addFacts(createFacts());
@@ -58,7 +73,7 @@ public class ConflictTest {
   }
 
   @Test
-  public void testDifferentChainsSameSize() throws SodiumLibraryException {
+  public void testDifferentChainsSameSize() throws SodiumLibraryException, IOException {
     // Add two blocks to the node
     nodeOne.addFacts(createFacts());
     assertEquals(2, nodeOne.getChain().getSize());

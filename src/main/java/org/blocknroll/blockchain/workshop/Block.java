@@ -6,6 +6,7 @@ import static org.blocknroll.blockchain.workshop.CryptoUtil.SIGNATURE_SIZE;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.IntStream;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -15,30 +16,32 @@ import org.apache.log4j.Logger;
 public class Block {
 
   private static final int FACTS_SIZE_FIELD = 4;
-  private static final int ID_SIZE_FIELD = 4;
-  private static final int NONCE_SIZE_FIELD = 4;
-  private static final int TIMESTAMP_SIZE_FIELD = 4;
+  private static final int ID_SIZE_FIELD = 8;
+  private static final int DIFF_SIZE_FIELD = 4;
+  private static final int NONCE_SIZE_FIELD = 8;
+  private static final int TIMESTAMP_SIZE_FIELD = 8;
   private static final Logger logger = LogManager.getLogger(Block.class);
   private Long identifier;
   private Collection<Fact> facts;
   private ByteBuffer previousHash;
   private Long nonce;
+  private Integer difficulty;
+  private Long timestamp;
   private ByteBuffer hash;
   private ByteBuffer signature;
-  private Long timestamp;
 
   /**
    * Constructor for genesis block.
    */
-  // Todo: Remove when genesis is hardcoded
   Block() {
     // Init Genesis block
-    this.identifier = 0L;
+    logger.debug("Creating block genesis block");
+    final String genesis = "000000000000000000000000000000000000000000000002736F16E8817EA45A00000164A350AC960000000000000000000000000000000000000000000000000000000000000000AA2537DAE96F41B7D5CF696C6168EE524D48DF9F48A46A2C6934CFAC85D1D78CE03233F6D8E3D3A02D3F07D59BB55CA4BB185DB050CFE0B56F1969D7C8C5510200007AF0D2DBEE710D25DB0C20BD214D90E693798F0A315C169AF28971D1931B";
     this.facts = new ArrayList<>();
     this.previousHash = ByteBuffer.allocate(HASH_SIZE);
-    this.nonce = 0L;
     this.hash = ByteBuffer.allocate(HASH_SIZE);
     this.signature = ByteBuffer.allocate(SIGNATURE_SIZE);
+    deserialise(CryptoUtil.hexStringToByteBuffer(genesis));
   }
 
   /**
@@ -47,15 +50,18 @@ public class Block {
    * @param facts the facts to be consolidated in this block.
    * @param prev the previous block.
    */
-  Block(Collection<Fact> facts, Block prev) {
-    logger.debug("Creating block pointing to previous " + CryptoUtil.bufferToHexString(prev.hash));
+  Block(Collection<Fact> facts, Block prev, int diff) {
     // Init block's members non related to mining process.
+    logger.debug("Creating block ...");
     this.identifier = prev.identifier + 1;
     this.facts = facts;
     this.previousHash = ByteBuffer.allocate(HASH_SIZE);
+    prev.hash.rewind();
     this.previousHash.put(prev.hash);
     this.hash = ByteBuffer.allocate(HASH_SIZE);
     this.signature = ByteBuffer.allocate(SIGNATURE_SIZE);
+    this.difficulty = diff;
+    logger.debug("Pointing to previous " + CryptoUtil.bufferToHexString(prev.hash));
   }
 
   /**
@@ -166,7 +172,7 @@ public class Block {
     for (Fact f : facts) {
       size += f.getSize();
     }
-    return FACTS_SIZE_FIELD + size;
+    return size;
   }
 
   /**
@@ -175,7 +181,7 @@ public class Block {
    * @return the size in bytes for this block.
    */
   int getSize() {
-    return ID_SIZE_FIELD + FACTS_SIZE_FIELD + getFactsSize() + NONCE_SIZE_FIELD +
+    return ID_SIZE_FIELD + FACTS_SIZE_FIELD + getFactsSize() + DIFF_SIZE_FIELD + NONCE_SIZE_FIELD +
         TIMESTAMP_SIZE_FIELD + HASH_SIZE + SIGNATURE_SIZE + HASH_SIZE;
   }
 
@@ -191,16 +197,37 @@ public class Block {
     for (Fact f : facts) {
       bb.put(f.serialise());
     }
+    bb.putInt(difficulty);
     bb.putLong(nonce);
     bb.putLong(timestamp);
     previousHash.rewind();
     bb.put(previousHash);
-    hash.rewind();
-    bb.put(hash);
     signature.rewind();
     bb.put(signature);
+    hash.rewind();
+    bb.put(hash);
     bb.rewind();
     return bb;
+  }
+
+  /**
+   * Serialises this block into a ByteBuffer object.
+   *
+   * @return ByteBuffer containing this block.
+   */
+  void deserialise(final ByteBuffer bb) {
+    identifier = bb.getLong();
+    IntStream.range(0, bb.getInt()).forEach(idx-> facts.add(new Fact(bb)));
+    difficulty = bb.getInt();
+    nonce = bb.getLong();
+    timestamp = bb.getLong();
+    previousHash.rewind();
+    IntStream.range(0, HASH_SIZE).forEach(idx-> previousHash.put(bb.get()));
+    signature.rewind();
+    IntStream.range(0, SIGNATURE_SIZE).forEach(idx-> signature.put(bb.get()));
+    hash.rewind();
+    IntStream.range(0, HASH_SIZE).forEach(idx-> hash.put(bb.get()));
+    bb.rewind();
   }
 
   /**
@@ -213,4 +240,11 @@ public class Block {
     return (other != null) && serialise().equals(((Block) other).serialise());
   }
 
+  public Integer getDifficulty() {
+    return difficulty;
+  }
+
+  public void setDifficulty(Integer difficulty) {
+    this.difficulty = difficulty;
+  }
 }
