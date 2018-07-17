@@ -1,3 +1,5 @@
+package org.blocknroll.blockchain.workshop;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -11,9 +13,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import org.blocknroll.blockchain.workshop.Fact;
-import org.blocknroll.blockchain.workshop.Node;
-import org.blocknroll.blockchain.workshop.NodeImp;
 import org.junit.Before;
 import org.junit.Test;
 

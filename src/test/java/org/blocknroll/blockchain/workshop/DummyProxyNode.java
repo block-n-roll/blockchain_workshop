@@ -1,3 +1,5 @@
+package org.blocknroll.blockchain.workshop;
+
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import java.io.IOException;
 import java.util.Collection;

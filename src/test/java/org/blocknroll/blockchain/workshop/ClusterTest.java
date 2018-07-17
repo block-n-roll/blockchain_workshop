@@ -1,3 +1,5 @@
+package org.blocknroll.blockchain.workshop;
+
 import static org.junit.Assert.assertEquals;
 
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
@@ -5,9 +7,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.blocknroll.blockchain.workshop.Fact;
-import org.blocknroll.blockchain.workshop.Node;
-import org.blocknroll.blockchain.workshop.NodeImp;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import scala.concurrent.BlockContext;
 
 /**
  * This class represents the interface towards the peers, thus declaring input / output interfaces.
@@ -86,9 +87,6 @@ public class NodeImp implements Node {
             try {
               byte[] buffer = Files.readAllBytes(file);
               tmp.deserialise(CryptoUtil.hexStringToByteBuffer(new String(buffer)));
-//              payload.rewind();
-//              String hex = CryptoUtil.bufferToHexString(payload);
-//              Files.write(file, hex.getBytes());
             } catch (IOException e) {
               e.printStackTrace();
             }
