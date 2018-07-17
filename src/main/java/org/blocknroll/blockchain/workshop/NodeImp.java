@@ -2,7 +2,6 @@ package org.blocknroll.blockchain.workshop;
 
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,6 +66,7 @@ public class NodeImp implements Node {
 
   /**
    * Loads the chain from directory chain.
+   *
    * @throws IOException throws input output or crypto exceptions.
    */
   private void loadChain() throws IOException, SodiumLibraryException {
@@ -94,8 +94,8 @@ public class NodeImp implements Node {
             }
             return tmp;
           })
-      .collect(Collectors.toList());
-      if(verifyChain(blocks)) {
+          .collect(Collectors.toList());
+      if (verifyChain(blocks)) {
         chain = new Chain(id, blocks);
         miner = new Miner(chain);
       }

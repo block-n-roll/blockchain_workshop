@@ -42,7 +42,7 @@ public class Chain {
   void addBlock(Block block) throws IOException {
     logger.info("Adding block " + block.getIdentifier() + " to the chain.");
     chain.add(block);
-    Files.write(Paths.get("chain/" + id + "/" + block.getIdentifier()+ ".block"),
+    Files.write(Paths.get("chain/" + id + "/" + block.getIdentifier() + ".block"),
         CryptoUtil.bufferToHexString(block.serialise()).getBytes());
   }
 

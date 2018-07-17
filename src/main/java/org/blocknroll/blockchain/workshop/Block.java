@@ -217,16 +217,16 @@ public class Block {
    */
   void deserialise(final ByteBuffer bb) {
     identifier = bb.getLong();
-    IntStream.range(0, bb.getInt()).forEach(idx-> facts.add(new Fact(bb)));
+    IntStream.range(0, bb.getInt()).forEach(idx -> facts.add(new Fact(bb)));
     difficulty = bb.getInt();
     nonce = bb.getLong();
     timestamp = bb.getLong();
     previousHash.rewind();
-    IntStream.range(0, HASH_SIZE).forEach(idx-> previousHash.put(bb.get()));
+    IntStream.range(0, HASH_SIZE).forEach(idx -> previousHash.put(bb.get()));
     signature.rewind();
-    IntStream.range(0, SIGNATURE_SIZE).forEach(idx-> signature.put(bb.get()));
+    IntStream.range(0, SIGNATURE_SIZE).forEach(idx -> signature.put(bb.get()));
     hash.rewind();
-    IntStream.range(0, HASH_SIZE).forEach(idx-> hash.put(bb.get()));
+    IntStream.range(0, HASH_SIZE).forEach(idx -> hash.put(bb.get()));
     bb.rewind();
   }
 
