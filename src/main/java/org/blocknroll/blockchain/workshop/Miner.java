@@ -23,7 +23,7 @@ class Miner {
   Miner(Chain chain) throws IOException {
     // Load secret and public key stuff for the miner
 //    publicKey = CryptoUtil.loadKey("keys/pub.key");
-    secretKey = CryptoUtil.loadKey("keys/sec.key");
+    secretKey = CryptoUtil.loadKey("key/sec.key");
     this.chain = chain;
   }
 
@@ -31,15 +31,23 @@ class Miner {
    * This method creates the block on the given facts.
    *
    * @param facts the facts to be mined inside the block.
+   * @param difficulty the number of preceding zeros of the generated hash.
    * @return the mined block.
    */
   Block mine(Collection<Fact> facts, int difficulty) throws SodiumLibraryException {
-    logger.info("Mining facts with difficulty " + difficulty);
+    return mine(new Block(facts, chain.getLastBlock(), difficulty));
+  }
 
+  /**
+   * This method mine a block with the basic information.
+   *
+   * @param block the block to be mined.
+   * @return the mined block.
+   */
+  Block mine(Block block) throws SodiumLibraryException {
+    long timestamp = System.currentTimeMillis();
+    logger.info("Mining facts with difficulty " + block.getDifficulty());
     int numComp = 0;
-
-    // Create the block
-    Block block = new Block(facts, chain.getLastBlock());
 
     // Mine the facts into a block and proof that it passes the validates
     ByteBuffer hash;
@@ -47,15 +55,16 @@ class Miner {
     do {
       block.setNonce(nonce++);
       block.setTimestamp(System.currentTimeMillis());
+      block.setSignature(CryptoUtil.sign(block, secretKey));
       hash = CryptoUtil.calculateHash(block);
       numComp++;
-    } while (!validates(hash, difficulty));
+    } while (!validates(hash, block.getDifficulty()));
 
-    // Sets the hash and signature to the block
+    // Sets the hash
     block.setHash(hash);
-    block.setSignature(CryptoUtil.sign(block, secretKey));
     logger.debug("Computed hash: " + CryptoUtil.bufferToHexString(block.getHash()));
-    logger.debug("Number of computations performed " + numComp);
+    logger.debug("Computation time (ms): " + (System.currentTimeMillis() - timestamp));
+    logger.debug("Number of computations performed: " + numComp);
     return block;
   }
 

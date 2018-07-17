@@ -1,5 +1,8 @@
 package org.blocknroll.blockchain.workshop;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.LogManager;
@@ -10,15 +13,15 @@ import org.apache.log4j.Logger;
  */
 public class Chain {
 
-  private List<Block> chain = new ArrayList<Block>();
+  private String id;
+  private List<Block> chain = new ArrayList<>();
   private Logger logger = LogManager.getLogger(Chain.class);
 
   /**
    * Constructor.
    */
-  Chain() {
-    // TODO: replace by hardcoded genesis block
-    chain.add(new Block());
+  Chain(String id) {
+    this.id = id;
   }
 
   /**
@@ -26,7 +29,8 @@ public class Chain {
    *
    * @param blocks the blocks forming the chain.
    */
-  Chain(List<Block> blocks) {
+  Chain(String name, List<Block> blocks) {
+    this.id = name;
     chain = blocks;
   }
 
@@ -35,8 +39,11 @@ public class Chain {
    *
    * @param block the block to be added to the chain.
    */
-  void addBlock(Block block) {
+  void addBlock(Block block) throws IOException {
+    logger.info("Adding block " + block.getIdentifier() + " to the chain.");
     chain.add(block);
+    Files.write(Paths.get("chain/" + id + "/" + block.getIdentifier() + ".block"),
+        CryptoUtil.bufferToHexString(block.serialise()).getBytes());
   }
 
   /**

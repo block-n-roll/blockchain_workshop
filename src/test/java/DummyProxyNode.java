@@ -1,4 +1,5 @@
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import org.blocknroll.blockchain.workshop.Block;
@@ -18,7 +19,7 @@ public class DummyProxyNode implements Node {
     return node.getChain();
   }
 
-  public void addFacts(Collection<Fact> facts) throws SodiumLibraryException {
+  public void addFacts(Collection<Fact> facts) throws SodiumLibraryException, IOException {
     node.addFacts(facts);
   }
 
@@ -34,11 +35,12 @@ public class DummyProxyNode implements Node {
     return node.getLastBlock();
   }
 
-  public void processBlocks(Node sender, List<Block> blocks) throws SodiumLibraryException {
+  public void processBlocks(Node sender, List<Block> blocks)
+      throws SodiumLibraryException, IOException {
     node.processBlocks(sender, blocks);
   }
 
-  public void requestChain(Node sender) throws SodiumLibraryException {
+  public void requestChain(Node sender) throws SodiumLibraryException, IOException {
     sender.processBlocks(this, node.getChain().getBlocks());
   }
 }

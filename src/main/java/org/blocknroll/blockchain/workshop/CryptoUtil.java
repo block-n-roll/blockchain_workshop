@@ -36,7 +36,7 @@ class CryptoUtil {
    */
   private static ByteBuffer sign(ByteBuffer data, ByteBuffer secretKey)
       throws SodiumLibraryException {
-    logger.debug("Signing data: " + bufferToHexString(data));
+    logger.trace("Signing data: " + bufferToHexString(data));
     data.rewind();
     secretKey.rewind();
     byte[] dat = new byte[data.limit()];
@@ -46,7 +46,7 @@ class CryptoUtil {
     byte[] sig = SodiumLibrary.cryptoSignDetached(dat, sec);
     ByteBuffer signature = ByteBuffer.allocate(sig.length);
     signature.put(sig);
-    logger.debug("Created signature: " + bufferToHexString(signature));
+    logger.trace("Created signature: " + bufferToHexString(signature));
     return signature;
   }
 
@@ -61,7 +61,7 @@ class CryptoUtil {
    */
   private static boolean verify(ByteBuffer signature, ByteBuffer data, ByteBuffer pubKey)
       throws SodiumLibraryException {
-    logger.debug("Verifying data: " + bufferToHexString(data));
+    logger.trace("Verifying data: " + bufferToHexString(data));
     signature.rewind();
     byte[] sig = new byte[signature.limit()];
     data.rewind();
@@ -80,7 +80,7 @@ class CryptoUtil {
    * @return the signature for the given doc and secret key.
    */
   static ByteBuffer sign(Fact fact, ByteBuffer secKey) throws SodiumLibraryException {
-    logger.debug("Signing fact ...");
+    logger.trace("Signing fact ...");
     return CryptoUtil.sign(fact.getData(), secKey);
   }
 
@@ -92,7 +92,7 @@ class CryptoUtil {
    * @return true if the fact is authentic, false otherwise.
    */
   static boolean verify(Fact fact, ByteBuffer pubKey) throws SodiumLibraryException {
-    logger.debug("Verifying fact ...");
+    logger.trace("Verifying fact ...");
     return verify(fact.getSignature(), fact.getData(), pubKey);
   }
 
@@ -104,7 +104,7 @@ class CryptoUtil {
    * @return the signature for the given block and secret key.
    */
   static ByteBuffer sign(Block block, ByteBuffer secKey) throws SodiumLibraryException {
-    logger.debug("Signing block ...");
+    logger.trace("Signing block ...");
     return CryptoUtil.sign(block.serialise(), secKey);
   }
 
@@ -116,7 +116,7 @@ class CryptoUtil {
    * @return true if the block is authentic, false otherwise.
    */
   static boolean verify(Block block, ByteBuffer pubKey) throws SodiumLibraryException {
-    logger.debug("Verifying block ...");
+    logger.trace("Verifying block ...");
     return verify(block.getSignature(), block.serialise(), pubKey);
   }
 
@@ -125,7 +125,7 @@ class CryptoUtil {
    */
   static ByteBuffer calculateHash(Block doc) throws SodiumLibraryException {
     // Clean the hash and signatures cannot be considered on hash calculations
-    byte[] payload = new byte[doc.getSize() - HASH_SIZE - SIGNATURE_SIZE];
+    byte[] payload = new byte[doc.getSize() - HASH_SIZE];
     doc.serialise().get(payload);
     byte[] h = SodiumLibrary.cryptoGenerichash(payload, HASH_SIZE);
     ByteBuffer hash = ByteBuffer.allocate(h.length);
@@ -179,5 +179,19 @@ class CryptoUtil {
     String hexStr = DatatypeConverter.printHexBinary(buff);
     bb.rewind();
     return hexStr;
+  }
+
+  /**
+   * Converts from hex string into a byte buffer.
+   *
+   * @param hex the hex string to be converted.
+   * @return the byte buffer containing the hexadecimal information.
+   */
+  static ByteBuffer hexStringToByteBuffer(String hex) {
+    byte[] b = DatatypeConverter.parseHexBinary(hex);
+    ByteBuffer bb = ByteBuffer.allocate(b.length);
+    bb.put(b);
+    bb.rewind();
+    return bb;
   }
 }
