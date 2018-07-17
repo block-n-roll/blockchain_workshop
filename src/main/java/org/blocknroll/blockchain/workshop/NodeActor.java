@@ -2,6 +2,7 @@ package org.blocknroll.blockchain.workshop;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Address;
 import akka.actor.Props;
@@ -11,84 +12,51 @@ import akka.cluster.ClusterEvent.MemberEvent;
 import akka.cluster.ClusterEvent.UnreachableMember;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import akka.management.AkkaManagement;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import java.net.InetSocketAddress;
 
-public class NodeMain extends AbstractActor {
+public class NodeActor extends AbstractActor {
 
+  // some constants
   private final static String HELP = "\n".join(
       "Usage:",
-      "   COMMAND [OPTIONS] [ARGUMENTS]",
-      "",
-      "Commands:",
-      "   start [PORT [PEER_NODE]]",
-      "      Starts a local node listening to PORT for commands. Optionally it joins to PEER_NODE.",
-      "   stop [NODE]",
-      "      Stops a local or remote NODE (use with care!).",
-      "   join [NODE] [PEER_NODE]",
-      "      Makes NODE to leave current cluster and to join to PEER_NODE.",
-      "   leave [NODE]",
-      "      Makes NODE to leave its current cluster but keeps it running.",
-      "   mine-facts [NODE] [FACTS...]",
-      "      Mines a new block in NODE from given facts.",
-      "   get-chain [NODE]",
-      "      Retrieves the chain from NODE.",
-      "   update-chain [NODE]",
-      "      Forces NODE to update its chain.",
-      "   status [NODE]",
-      "      Displays status information for NODE, including its current block.",
+      "   NodeActor [OPTIONS] [PEER_NODE]",
       "",
       "Options:",
       "   -h\tPrints this help and exists.",
+      "   -p PORT\tUse PORT for listening to messages (random port by default).",
       "",
       "Notes:",
-      "   All NODES are in the form IP:PORT, assuming localhost when IP is not given.");
-  private final static String DEFAULT_HOST = "127.0.0.1";
-  private final static int DEFAULT_PORT = 2550;
+      "   A PEER_NODE has the form IP:PORT, assuming localhost when IP is not given.");
+  public final static String DEFAULT_HOST = "127.0.0.1";
+  public final static int DEFAULT_PORT = 2550;
 
-  // node comands
-  enum Command {
-    START, STOP, JOIN, LEAVE, MINE_FACTS, GET_CHAIN, UPDATE_CHAIN, STATUS
-  }
+  // cluster objects
+  private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
+  private Cluster cluster = Cluster.get(getContext().system());
 
-  private static class NodeAddress {
+  // arguments
+  public static Integer nodePort = null;
+  public static InetSocketAddress peerAddress = null;
 
-    public NodeAddress() {
-      host = DEFAULT_HOST;
-      port = DEFAULT_PORT;
-    }
-
-    public NodeAddress(String address) {
+  public static InetSocketAddress parseAddress(String address) {
+    String host = DEFAULT_HOST;
+    int port = DEFAULT_PORT;
+    if (address != null && !address.isEmpty()) {
       if (address.contains(":")) {
         String[] pair = address.trim().split(":");
         host = (pair[0].equalsIgnoreCase("localhost") ? DEFAULT_HOST : pair[0]);
         port = Integer.parseInt(pair[1]);
       } else if (address.contains(".")) {
         host = address.trim();
-        port = DEFAULT_PORT;
       } else {
-        host = DEFAULT_HOST;
         port = Integer.parseInt(address.trim());
       }
     }
-
-    public String toString() {
-      return host + ":" + port;
-    }
-
-    public String host;
-    public int port;
+    return new InetSocketAddress(host, port);
   }
-
-  // cluster objects
-  private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-  private Cluster cluster = Cluster.get(getContext().system());
-
-  // input arguments
-  private static Command command = null;
-  private static NodeAddress nodeAddress = null;
-  private static NodeAddress peerAddress = null;
-  private static String facts = null;
 
   //subscribe to cluster changes
   @Override
@@ -138,10 +106,29 @@ public class NodeMain extends AbstractActor {
         .build();
   }
 
-  private static ActorRef startup() {
+  private static void checkArgs(String[] args) {
+    for (int i = 0; i < args.length; i++) {
+      if (args[i].equalsIgnoreCase("-h")) {
+        System.out.println(HELP);
+        System.exit(0);
+      } else if (args[i].equalsIgnoreCase("-p")) {
+        i++;
+        if (i == args.length) {
+          throw new RuntimeException("PORT expected for -p option.");
+        }
+        nodePort = Integer.parseInt(args[i]);
+      } else if (peerAddress == null) {
+        peerAddress = parseAddress(args[i]);
+      } else {
+        throw new RuntimeException("too many arguments: " + args[i]);
+      }
+    }
+  }
+
+  public static ActorRef startup(InetSocketAddress address) {
     // Override the configuration of the port
     Config config = ConfigFactory.parseString(
-        "akka.remote.netty.tcp.port=" + nodeAddress.port + "\n")
+        "akka.remote.netty.tcp.port=" + address.getPort() + "\n")
         //+            "akka.remote.artery.canonical.port=" + nodeAddres.port)
         .withFallback(ConfigFactory.load());
 
@@ -149,140 +136,35 @@ public class NodeMain extends AbstractActor {
     ActorSystem system = ActorSystem.create("ClusterSystem", config);
 
     // Create an actor that handles cluster domain events
-    return system.actorOf(Props.create(NodeMain.class), "clusterListener");
-  }
-
-  private static void checkArgs(String[] args) {
-    try {
-      for (int i = 0; i < args.length; i++) {
-        if (args[i].equalsIgnoreCase("-h")) {
-          System.out.println(HELP);
-          System.exit(0);
-        } else if (command == null) {
-          if (args[i].equalsIgnoreCase("start")) {
-            command = Command.START;
-          } else if (args[i].equalsIgnoreCase("stop")) {
-            command = Command.STOP;
-          } else if (args[i].equalsIgnoreCase("join")) {
-            command = Command.JOIN;
-          } else if (args[i].equalsIgnoreCase("leave")) {
-            command = Command.LEAVE;
-          } else if (args[i].equalsIgnoreCase("mine-facts")) {
-            command = Command.MINE_FACTS;
-          } else if (args[i].equalsIgnoreCase("get-chain")) {
-            command = Command.GET_CHAIN;
-          } else if (args[i].equalsIgnoreCase("update-chain")) {
-            command = Command.UPDATE_CHAIN;
-          } else if (args[i].equalsIgnoreCase("status")) {
-            command = Command.STATUS;
-          } else {
-            new RuntimeException("unknown command " + args[i]);
-          }
-        } else if (command == Command.START || command == Command.START) {
-          if (nodeAddress == null) {
-            nodeAddress = new NodeAddress(args[i]);
-          } else if (peerAddress == null) {
-            peerAddress = new NodeAddress(args[i]);
-          } else {
-            throw new RuntimeException("too many arguments");
-          }
-        } else if (command == Command.STOP || command == Command.LEAVE
-            || command == Command.GET_CHAIN || command == Command.UPDATE_CHAIN
-            || command == Command.STATUS) {
-          if (nodeAddress == null) {
-            nodeAddress = new NodeAddress(args[i]);
-          } else {
-            throw new RuntimeException("too many arguments");
-          }
-        } else if (command == Command.LEAVE) {
-          if (nodeAddress == null) {
-            nodeAddress = new NodeAddress(args[i]);
-          } else {
-            throw new RuntimeException("too many arguments");
-          }
-        } else if (command == Command.MINE_FACTS) {
-          if (nodeAddress == null) {
-            nodeAddress = new NodeAddress(args[i]);
-          } else if (facts == null) {
-            facts = args[i];
-          } else {
-            facts += " " + args[i];
-          }
-        } else {
-          throw new RuntimeException("too many arguments");
-        }
-      }
-      if (command == null) {
-        throw new RuntimeException("expected command");
-      }
-
-      // defaults
-      nodeAddress = (nodeAddress == null ? new NodeAddress() : nodeAddress);
-    } catch (Exception e) {
-      System.out.println("Error: " + e.getMessage() + ".");
-      System.out.println("Try -h for help.");
-      System.exit(-1);
-    }
+    return system.actorOf(Props.create(NodeActor.class), "clusterListener");
   }
 
   public static void main(String[] args) {
     checkArgs(args);
-    //    System.out.println("COMMAND: " + command);
-    //    System.out.println("NODE: " + nodeAddress.toString());
-    //    System.out.println("PEER: " + (peerAddress != null ? peerAddress.toString() : "<unknown>"));
-    //    //System.exit(-1);
-
-    // process rest of the command
-    switch (command) {
-      case START: {
-        // Override the configuration of the port
-        Config config = ConfigFactory
-            .parseString("akka.remote.netty.tcp.port=" + nodeAddress.port + "\n")
-            //+            "akka.remote.artery.canonical.port=" + nodeAddres.port)
-            .withFallback(ConfigFactory.load());
-        // Create an Akka system
-        ActorSystem system = ActorSystem.create("ClusterSystem", config);
-        String nodeName = "node@" + nodeAddress.toString();
-        ActorRef node = null;
-        node = system.actorOf(Props.create(NodeMain.class), nodeName);
-        if (peerAddress != null) {
-          node.tell(new NodeMessages.Join(nodeAddress.host, nodeAddress.port), node);
-        }
-        break;
-      }
-      case STOP: {
-        Config config = ConfigFactory
-            .parseString("akka.remote.netty.tcp.port=" + nodeAddress.port + "\n")
-            //+            "akka.remote.artery.canonical.port=" + nodeAddres.port)
-            .withFallback(ConfigFactory.load());
-        ActorSystem system = ActorSystem.create("ClusterSystem", config);
-        String nodeName = "node@" + nodeAddress.toString();
-        ActorRef node = system.actorFor(nodeName);
-        system.stop(node);
-        break;
-      }
-      case JOIN:
-        break;
-      case LEAVE:
-        break;
-      case MINE_FACTS:
-        break;
-      case GET_CHAIN:
-        break;
-      case UPDATE_CHAIN:
-        break;
-      case STATUS:
-        break;
+    ActorSystem system;
+    Config config;
+    if (nodePort != null) {
+      config = ConfigFactory.parseString(
+          "akka.remote.netty.tcp.port=" + nodePort + "\n")
+          //+            "akka.remote.artery.canonical.port=" + nodePort)
+          .withFallback(ConfigFactory.load());
+    } else {
+      config = ConfigFactory.load();
+    }
+    system = ActorSystem.create("ClusterSystem", config);
+    try {
+      AkkaManagement.get(system).start();
+    } catch (Exception e) {
+      // ignore
     }
 
-    /*
-    boolean connectToSeed = true;
-    System.out.println("Listening on port " + port + ".");
-    ActorRef node = startup();
-    if (connectToSeed) {
-      System.out.println("Connecting to cluster at " + peerHost + ":" + peerPort + "...");
-      node.tell(new NodeMessages.Join(peerHost, peerPort), node);
+    ActorRef node = system.actorOf(Props.create(NodeActor.class), "clusterListener");
+    System.out.println("LAMADREQUE: " + node.path());
+    if (peerAddress != null) {
+      String uri = "akka.tcp://ClusterSystem@" + peerAddress.getHostName() + ":" + peerAddress.getPort() + "/user/clusterListener";
+      System.out.println("Connecting to cluster at " + uri + "...");
+      ActorSelection selection = system.actorSelection(uri);
+      selection.tell(new NodeMessages.Join(peerAddress.getHostName(), peerAddress.getPort()), node);
     }
-    */
   }
 }
