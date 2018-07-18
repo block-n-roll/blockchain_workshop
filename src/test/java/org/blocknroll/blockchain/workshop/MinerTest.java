@@ -13,9 +13,10 @@ public class MinerTest {
   public void mineTest() throws Exception {
     Miner miner = new Miner();
     Block b = new Block();
-    String hash = CryptoUtil.bufferToHexString(miner.mine(b, 0).getHash());
+    String hash = CryptoUtil.bufferToHexString(miner.mine(b, 1).getHash());
     assertEquals(CryptoUtil.HASH_SIZE, hash.length() / 2);
     assertEquals(CryptoUtil.bufferToHexString(CryptoUtil.calculateHash(b)), hash);
+    assertTrue(miner.validates(b.getHash(), 1));
   }
 
   @Test
