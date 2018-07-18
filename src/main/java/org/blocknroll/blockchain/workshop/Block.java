@@ -242,7 +242,8 @@ public class Block {
    * @return true if both blocks are identical false otherwise.
    */
   public boolean equals(Object other) {
-    return (other != null) && serialise().equals(((Block) other).serialise());
+    return (other != null) && (getClass() == other.getClass()) && serialise()
+        .equals(((Block) other).serialise());
   }
 
 }

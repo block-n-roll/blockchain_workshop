@@ -6,9 +6,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,7 +17,7 @@ import org.apache.log4j.Logger;
 /**
  * This class represents the interface towards the peers, thus declaring input / output interfaces.
  */
-public class NodeImp implements Node {
+public class NodeImp {
 
   private Cluster cluster;
   private Logger logger = LogManager.getLogger(NodeImp.class);
@@ -27,7 +25,7 @@ public class NodeImp implements Node {
   private Chain chain;
 
   // -----------------------------------------------------------------------------------------------------------------
-  // Node methods
+  // Cluster methods
   // -----------------------------------------------------------------------------------------------------------------
 
   /**
@@ -92,21 +90,18 @@ public class NodeImp implements Node {
   }
 
   /**
-   * @param sender the sender node.
    * @param blocks the blocks to be processed.
    */
-  public void processBlocks(Node sender, List<Block> blocks)
+  public boolean doProofOfWork(List<Block> blocks)
       throws Exception {
-    processBlockResponse(sender, blocks, chain.getLastBlock());
+    return processBlockResponse(blocks, chain.getLastBlock());
   }
 
   /**
    * This is invoked when other peers are requesting the chain.
-   *
-   * @param sender the sender node.
    */
-  public void requestChain(Node sender) throws Exception {
-    sender.processBlocks(this, chain.getBlocks());
+  public void requestChain() throws Exception {
+    doProofOfWork(chain.getBlocks());
   }
 
   // -----------------------------------------------------------------------------------------------------------------
@@ -118,7 +113,7 @@ public class NodeImp implements Node {
    *
    * @param facts the facts to be mined.
    */
-  public void addFacts(Collection<Fact> facts) throws Exception {
+  public void mineFacts(Collection<Fact> facts) throws Exception {
     // Check inputs
     if (facts == null) {
       throw new IllegalArgumentException("Cannot create a fact with null values");
@@ -126,12 +121,8 @@ public class NodeImp implements Node {
 
     // Mine block, verify it and add it to the chain.
     Block block = miner.mine(facts, chain.getLastBlock(), 2);
-    if (verifyBlock(block, chain.getLastBlock())) {
-      chain.addBlock(block);
-      cluster.notify(block);
-      // TODO: Response OK
-    }
-    // TODO: Response ERROR
+    logger.info("Mining facts into block " + block.getIdentifier());
+    cluster.requestProofOfWork(block);
   }
 
   /**
@@ -158,7 +149,7 @@ public class NodeImp implements Node {
    * @param blocks the blocks to be processed.
    * @return true if block is valid, false otherwise.
    */
-  private boolean processBlockResponse(Node sender, List<Block> blocks, Block previous)
+  private boolean processBlockResponse(List<Block> blocks, Block previous)
       throws Exception {
     Block block = blocks.get(blocks.size() - 1);
     if (block.getIdentifier() > previous.getIdentifier()) {
@@ -167,11 +158,11 @@ public class NodeImp implements Node {
       if (block.getPreviousHash().equals(previous.getHash())) {
         logger.debug("This is a good block!");
         chain.addBlock(block);
-        cluster.notify(block);
+        cluster.requestProofOfWork(block);
         return true;
       } else if (blocks.size() == 1) {
         logger.warn("Request the chain to the peers.");
-        sender.requestChain(this);
+        cluster.requestChain();
       } else {
         logger.warn("Received blockchain is longer, replace current one.");
         if (verifyChain(blocks)) {

@@ -192,7 +192,7 @@ public class NodeMain extends AbstractActor {
     ActorRef node = startup();
     if (connectToSeed) {
       System.out.println("Connecting to cluster at " + peerHost + ":" + peerPort + "...");
-      node.tell(new NodeMessages.Join(peerHost, peerPort), node);
+      node.tell(new Message.Join(peerHost, peerPort), node);
     }
     */
   }
@@ -226,7 +226,7 @@ public class NodeMain extends AbstractActor {
               //ActorRef node = NodeActor.startup(msg.nodeAddress);
               if (msg.peerAddress != null) {
                 node.tell(
-                    new NodeMessages.Join(msg.peerAddress.getHostName(), msg.peerAddress.getPort()),
+                    new Message.Join(msg.peerAddress.getHostName(), msg.peerAddress.getPort()),
                     getSelf());
               }
               break;

@@ -1,30 +1,41 @@
 package org.blocknroll.blockchain.workshop;
 
+import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import akka.actor.UntypedActor;
-import akka.cluster.Cluster;
-import akka.event.Logging;
-import akka.event.LoggingAdapter;
+import akka.cluster.pubsub.DistributedPubSub;
+import akka.cluster.pubsub.DistributedPubSubMediator.Subscribe;
 import akka.management.AkkaManagement;
+import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.blocknroll.blockchain.workshop.Message.AddFacts;
+import org.blocknroll.blockchain.workshop.Message.ProofOfWorkResponse;
+import org.blocknroll.blockchain.workshop.Message.RequestProofOfWork;
 
-public class NodeActor extends UntypedActor {
+public class NodeActor extends AbstractActor implements Cluster {
 
   // some constants
   public final static String DEFAULT_HOST = "127.0.0.1";
   public final static int DEFAULT_PORT = 2550;
-  private final static String HELP = "\n".join(
+  private final static String HELP = String.join(
       "Usage:",
       "   NodeActor [OPTIONS] [PEER_NODE]",
       "",
@@ -35,15 +46,24 @@ public class NodeActor extends UntypedActor {
       "",
       "Notes:",
       "   A PEER_NODE has the form IP:PORT, assuming localhost when IP is not given.");
-
   // cluster objects
-  private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-  //private Cluster cluster = Cluster.get(getContext().system());
-
+  private static final Logger logger = LogManager.getLogger(NodeActor.class);
   // arguments
   public static String nodeHost = null;
+  //private Cluster cluster = Cluster.get(getContext().system());
   public static Integer nodePort = null;
   public static InetSocketAddress peerAddress = null;
+
+  private NodeImp node;
+
+  private Map<String, Integer> pow = new HashMap<>();
+
+  public NodeActor() throws IOException, SodiumLibraryException {
+    // Subscribe to events
+    ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
+    mediator.tell(new Subscribe("BlockMined", getSelf()), getSelf());
+    node = new NodeImp(this);
+  }
 
   public static InetSocketAddress parseAddress(String address) {
     String host = DEFAULT_HOST;
@@ -60,48 +80,6 @@ public class NodeActor extends UntypedActor {
       }
     }
     return new InetSocketAddress(host, port);
-  }
-
-  //subscribe to cluster changes
-  @Override
-  public void preStart() {
-    /*
-    if (peerAddress != null) {
-      String address = peerAddress.toString().substring(1);
-      String name = buildName(peerAddress.getPort());
-      String path = "akka.tcp://ClusterSystem@" + address + "/user/" + name;
-      ActorRef actor = getContext().actorFor(path);
-      System.out.println(path);
-      ActorSelection selection = getContext().system()
-          .actorSelection(path); //getContext().actorSelection(path);
-      System.out.println(selection.pathString());
-      NodeMessages.Join msg = new NodeMessages.Join(nodeHost, nodePort);
-      selection.tell(msg, self());
-    }
-    */
-  }
-
-  @Override
-  public void onReceive(Object msg) {
-    log.info("Processing message...");
-    Cluster cluster = Cluster.get(getContext().system());
-    if (msg instanceof NodeMessages.Join) {
-      /*
-      log.info("Joining to " + msg.toString() + "...");
-      NodeMessages.Join params = (NodeMessages.Join) msg;
-      Address address = new Address("akka.tcp", "ClusterSystem", params.host, params.port);
-      cluster.join(address);
-      */
-    } else if (msg instanceof NodeMessages.Leave) {
-      /*
-      cluster.leave(cluster.selfAddress());
-      log.info("Leaving cluster...");
-      Address address = new Address("akka.tcp", "ClusterSystem");
-      cluster.join(address);
-      */
-    } else {
-      log.error("Unknown message of type " + msg.getClass());
-    }
   }
 
   public static String getLocalhost() {
@@ -195,5 +173,125 @@ public class NodeActor extends UntypedActor {
     ActorSystem system = ActorSystem.create("ClusterSystem", config);
     ActorRef node = system.actorOf(Props.create(NodeActor.class), buildName(nodePort));
     AkkaManagement.get(system).start();
+  }
+
+  //subscribe to cluster changes
+  @Override
+  public void preStart() {
+    /*
+    if (peerAddress != null) {
+      String address = peerAddress.toString().substring(1);
+      String name = buildName(peerAddress.getPort());
+      String path = "akka.tcp://ClusterSystem@" + address + "/user/" + name;
+      ActorRef actor = getContext().actorFor(path);
+      System.out.println(path);
+      ActorSelection selection = getContext().system()
+          .actorSelection(path); //getContext().actorSelection(path);
+      System.out.println(selection.pathString());
+      Message.Join msg = new Message.Join(nodeHost, nodePort);
+      selection.tell(msg, self());
+    }
+    */
+  }
+
+  @Override
+  public Receive createReceive() {
+    return receiveBuilder()
+        .match(String.class, msg -> {
+              System.out.println("-------------------------------------------------");
+              System.out.println(msg);
+              System.out.println("-------------------------------------------------");
+            }
+        )
+        .match(AddFacts.class, req -> {
+          logger.info("Mining facts ...");
+          node.mineFacts(req.facts);
+        })
+        .match(RequestProofOfWork.class, req -> {
+          logger.info("Proof of work requested for block " + req.block.getIdentifier());
+          new Message.ProofOfWorkResponse(req.block,
+              node.doProofOfWork(Collections.singletonList(req.block)));
+        })
+        .match(ProofOfWorkResponse.class, res -> {
+          logger.info(
+              "Proof of work response for block " + res.block.getIdentifier() + " is " + res.block
+                  .getIdentifier());
+
+        })
+        .build();
+  }
+
+//  @Override
+//  public void onReceive(Object msg) {
+//    log.info("Processing message...");
+//    Cluster cluster = Cluster.get(getContext().system());
+//    if (msg instanceof Message.Join) {
+//      /*
+//      log.info("Joining to " + msg.toString() + "...");
+//      Message.Join params = (Message.Join) msg;
+//      Address address = new Address("akka.tcp", "ClusterSystem", params.host, params.port);
+//      cluster.join(address);
+//      */
+//    } else if (msg instanceof Message.Leave) {
+//      /*
+//      cluster.leave(cluster.selfAddress());
+//      log.info("Leaving cluster...");
+//      Address address = new Address("akka.tcp", "ClusterSystem");
+//      cluster.join(address);
+//      */
+//    } else {
+//      log.error("Unknown message of type " + msg.getClass());
+//    }
+//  }
+
+  @Override
+  public void setSeed(Cluster seed) {
+    logger.warn("Ignoring seed... automatic cluster configuration enabled.");
+  }
+
+  @Override
+  public void requestProofOfWork(Block block) throws Exception {
+
+  }
+
+  @Override
+  public String getId() {
+    return nodeHost + ":" + nodePort;
+  }
+
+  @Override
+  public void addPeer(Cluster n) {
+    logger.warn("Ignoring add peer... automatic cluster configuration enabled.");
+  }
+
+  @Override
+  public List<Cluster> getPeers() {
+    logger.warn("Ignoring get peers... automatic cluster configuration enabled.");
+    return null;
+  }
+
+  @Override
+  public void addFacts(Collection<Fact> facts) throws Exception {
+    node.mineFacts(facts);
+  }
+
+  @Override
+  public Chain getChain() {
+    return node.getChain();
+  }
+
+  @Override
+  public Block getLastBlock() {
+    return node.getLastBlock();
+  }
+
+  @Override
+  public void processBlocks(List<Block> block) throws Exception {
+    node.doProofOfWork(block);
+  }
+
+  @Override
+  public void requestChain() throws Exception {
+
   }
 }

@@ -15,9 +15,9 @@ public class ClusterTest {
   private Cluster cluster1;
   private Cluster cluster2;
   private NodeImp nodeOne;
-  private Node proxyOne;
+  private Cluster proxyOne;
   private NodeImp nodeTwo;
-  private Node proxyTwo;
+  private Cluster proxyTwo;
 
   private Collection<Fact> createFacts() {
     Collection<Fact> facts = new ArrayList<Fact>();
@@ -30,12 +30,8 @@ public class ClusterTest {
     // Create nodes
     cluster1 = new DummyCluster("localhost1111");
     nodeOne = new NodeImp(cluster1);
-    cluster1.setSeed(nodeOne);
-    proxyOne = new DummyProxyNode(nodeOne);
     cluster2 = new DummyCluster("localhost2222");
     nodeTwo = new NodeImp(cluster2);
-    cluster2.setSeed(nodeTwo);
-    proxyTwo = new DummyProxyNode(nodeTwo);
   }
 
   @Test
