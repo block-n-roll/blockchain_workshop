@@ -1,34 +1,16 @@
-# blockchain_workshop
-Workshop describing the functionality of a blockchain (mining, consensus, conflict resolution, ...).
+# Exercise 2
+Complete the Block class with the relevant code at `TODO` marks, and make all the test to pass.
 
+# Compile and run the tests
+Run the following command to compile and run the tests
 ```
-                                  pending to mine
-         +---------------------------------------------------------------+
-         |                                                               |
-         |                      +------------------+                     |
-         |                      |      Block       |                     | *
-         |                      +------------------+            +--------v-------+
-+--------+---------+            | id:String        |            |      Fact      |
-| Miner            |   mine     | nonce:String     |  made of * +----------------+
-+------------------+ - - - - - -> facts:List<Fact> +------------> dat:ByteBuffer |
-| sig:ByteBuffer   |            | prev:String      |            | sig:ByteBuffer |
-+--------+---------+            | hash:String      |            +----------------+
-         |                      | sig:ByteBuffer   |
-         |                      +--------^---------+
-         |                               | *
-         |                     +---------+----------+
-         |                  1  | Chain              |
-         +--------------------->--------------------+
-                               | blocks:List<Block> |
-                               +--------------------+
+mvn clean package
 ```
 
-# blockchain_workshop status
-![Build status](https://travis-ci.com/block-n-roll/blockchain_workshop.svg?branch=master)
-
-# Contribution
-We follow google code style for this repository.
-Please find below the files to configure your IDE:
-
-* [intellij](https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml)
-* [eclipse](https://github.com/google/styleguide/blob/gh-pages/eclipse-java-google-style.xml)
+# Next chapter
+run the following commands to go into the next exercise
+```
+git reset --hard
+git clean -xfd
+git checkout feature/exercise_3
+```
