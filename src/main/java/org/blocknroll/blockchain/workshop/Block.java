@@ -24,7 +24,6 @@ public class Block {
   private Collection<Fact> facts;
   private ByteBuffer previousHash;
   private Long nonce;
-  private Integer difficulty;
   private Long timestamp;
   private ByteBuffer hash;
   private ByteBuffer signature;
@@ -49,7 +48,7 @@ public class Block {
    * @param facts the facts to be consolidated in this block.
    * @param prev the previous block.
    */
-  Block(Collection<Fact> facts, Block prev, int diff) {
+  Block(Collection<Fact> facts, Block prev) {
     // Init block's members non related to mining process.
     logger.debug("Creating block ...");
     this.identifier = prev.identifier + 1;
@@ -59,7 +58,6 @@ public class Block {
     this.previousHash.put(prev.hash);
     this.hash = ByteBuffer.allocate(HASH_SIZE);
     this.signature = ByteBuffer.allocate(SIGNATURE_SIZE);
-    this.difficulty = diff;
     logger.debug("Pointing to previous " + CryptoUtil.bufferToHexString(prev.hash));
   }
 
@@ -247,11 +245,4 @@ public class Block {
     return (other != null) && serialise().equals(((Block) other).serialise());
   }
 
-  public Integer getDifficulty() {
-    return difficulty;
-  }
-
-  public void setDifficulty(Integer difficulty) {
-    this.difficulty = difficulty;
-  }
 }
