@@ -31,11 +31,14 @@ public class ConflictTest {
 
   @Before
   public void setup() throws IOException, SodiumLibraryException {
+
     // Clean up chains
-    Files.walk(Paths.get("chain"))
-        .sorted(Comparator.reverseOrder())
-        .map(Path::toFile)
-        .forEach(File::delete);
+    if(Files.exists(Paths.get("chain"))) {
+      Files.walk(Paths.get("chain"))
+          .sorted(Comparator.reverseOrder())
+          .map(Path::toFile)
+          .forEach(File::delete);
+    }
 
     // Create nodes
     nodeOne = new NodeImp("localhost", 1111);

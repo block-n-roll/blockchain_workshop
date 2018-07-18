@@ -52,7 +52,7 @@ public class NodeImp implements Node {
     this.id = ip + port;
     peers = new ArrayList<>();
     chain = new Chain(id);
-    miner = new Miner(chain);
+    miner = new Miner();
 
     // Load the chain from disk if it exists or generate genesis block
     if (Files.isDirectory(Paths.get("chain/" + id + "/"))) {
@@ -94,7 +94,6 @@ public class NodeImp implements Node {
           .collect(Collectors.toList());
       if (verifyChain(blocks)) {
         chain = new Chain(id, blocks);
-        miner = new Miner(chain);
       }
     }
   }
@@ -161,7 +160,7 @@ public class NodeImp implements Node {
     }
 
     // Mine block, verify it and add it to the chain.
-    Block block = miner.mine(facts, 2);
+    Block block = miner.mine(facts, chain.getLastBlock(), 2);
     if (verifyBlock(block, chain.getLastBlock())) {
       chain.addBlock(block);
       notifyNewBlock(block);
@@ -212,7 +211,6 @@ public class NodeImp implements Node {
         logger.warn("Received blockchain is longer, replace current one.");
         if (verifyChain(blocks)) {
           chain = new Chain(id, blocks);
-          miner = new Miner(chain);
         }
       }
     } else {

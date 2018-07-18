@@ -11,20 +11,15 @@ import org.apache.log4j.Logger;
  * This is the miner class in charge of mining pending facts.
  */
 class Miner {
-
-  private Chain chain;
-  //  private ByteBuffer publicKey;
   private ByteBuffer secretKey;
   private Logger logger = LogManager.getLogger(Miner.class);
 
   /**
    * Constructor.
    */
-  Miner(Chain chain) throws IOException {
-    // Load secret and public key stuff for the miner
-//    publicKey = CryptoUtil.loadKey("keys/pub.key");
+  Miner() throws IOException {
+    // Load secret key to sign mined blocks
     secretKey = CryptoUtil.loadKey("key/sec.key");
-    this.chain = chain;
   }
 
   /**
@@ -34,8 +29,8 @@ class Miner {
    * @param difficulty the number of preceding zeros of the generated hash.
    * @return the mined block.
    */
-  Block mine(Collection<Fact> facts, int difficulty) throws SodiumLibraryException {
-    return mine(new Block(facts, chain.getLastBlock(), difficulty));
+  Block mine(Collection<Fact> facts, Block prev, int difficulty) throws SodiumLibraryException {
+    return mine(new Block(facts, prev), difficulty);
   }
 
   /**
@@ -44,9 +39,9 @@ class Miner {
    * @param block the block to be mined.
    * @return the mined block.
    */
-  Block mine(Block block) throws SodiumLibraryException {
+  Block mine(Block block, int difficulty) throws SodiumLibraryException {
     long timestamp = System.currentTimeMillis();
-    logger.info("Mining facts with difficulty " + block.getDifficulty());
+    logger.info("Mining facts with difficulty " + difficulty);
     int numComp = 0;
 
     // Mine the facts into a block and proof that it passes the validates
@@ -58,7 +53,7 @@ class Miner {
       block.setSignature(CryptoUtil.sign(block, secretKey));
       hash = CryptoUtil.calculateHash(block);
       numComp++;
-    } while (!validates(hash, block.getDifficulty()));
+    } while (!validates(hash, difficulty));
 
     // Sets the hash
     block.setHash(hash);
@@ -74,7 +69,7 @@ class Miner {
    * @param hash the hash to be tested against the proof of work condition.
    * @return true if it is a valid hash, false otherwise.
    */
-  private boolean validates(ByteBuffer hash, int difficulty) {
+  boolean validates(ByteBuffer hash, int difficulty) {
     hash.rewind();
     boolean verified = true;
     while (verified && (difficulty > 0)) {
