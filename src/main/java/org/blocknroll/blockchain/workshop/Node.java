@@ -19,21 +19,7 @@ public interface Node {
    *
    * @param facts the collection of facts to be mined into a blockchain.
    */
-  void addFacts(Collection<Fact> facts) throws SodiumLibraryException, IOException;
-
-  /**
-   * Returns the peers linked to this node.
-   *
-   * @return the peers linked to this node.
-   */
-  Collection<Node> getPeers();
-
-  /**
-   * Adds a peer to this node.
-   *
-   * @param node the node to be linked to this one.
-   */
-  void addPeer(Node node);
+  void addFacts(Collection<Fact> facts) throws SodiumLibraryException, IOException, Exception;
 
   /**
    * Requests the whole chain.
@@ -58,12 +44,12 @@ public interface Node {
    *
    * @param sender the sender node.
    */
-  void processBlocks(Node sender, List<Block> block) throws SodiumLibraryException, IOException;
+  void processBlocks(Node sender, List<Block> block) throws SodiumLibraryException, IOException, Exception;
 
   /**
    * Request the whole chain.
    *
    * @param sender the sender node.
    */
-  void requestChain(Node sender) throws SodiumLibraryException, IOException;
+  void requestChain(Node sender) throws SodiumLibraryException, IOException, Exception;
 }

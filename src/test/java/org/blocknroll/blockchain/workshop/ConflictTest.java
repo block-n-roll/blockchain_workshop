@@ -18,6 +18,8 @@ import org.junit.Test;
 
 public class ConflictTest {
 
+  private Cluster cluster1;
+  private Cluster cluster2;
   private NodeImp nodeOne;
   private Node proxyOne;
   private NodeImp nodeTwo;
@@ -41,14 +43,18 @@ public class ConflictTest {
     }
 
     // Create nodes
-    nodeOne = new NodeImp("localhost", 1111);
+    cluster1 = new ClusterDummy("localhost1111");
+    nodeOne = new NodeImp(cluster1);
+    cluster1.setSeed(nodeOne);
     proxyOne = new DummyProxyNode(nodeOne);
-    nodeTwo = new NodeImp("localhost", 2222);
+    cluster2 = new ClusterDummy("localhost2222");
+    nodeTwo = new NodeImp(cluster2);
+    cluster2.setSeed(nodeTwo);
     proxyTwo = new DummyProxyNode(nodeTwo);
   }
 
   @Test
-  public void testDifferentChainsDifferentSizes() throws SodiumLibraryException, IOException {
+  public void testDifferentChainsDifferentSizes() throws Exception {
     // Add two blocks to the node
     nodeOne.addFacts(createFacts());
     nodeOne.addFacts(createFacts());
@@ -59,8 +65,8 @@ public class ConflictTest {
     assertEquals(2, nodeTwo.getChain().getSize());
 
     // Join the nodes into a cluster
-    nodeOne.addPeer(proxyTwo);
-    nodeTwo.addPeer(proxyOne);
+    cluster1.addPeer(proxyTwo);
+    cluster2.addPeer(proxyOne);
 
     // Add one more fact to the node
     nodeOne.addFacts(createFacts());
@@ -71,7 +77,7 @@ public class ConflictTest {
   }
 
   @Test
-  public void testDifferentChainsSameSize() throws SodiumLibraryException, IOException {
+  public void testDifferentChainsSameSize() throws Exception {
     // Add two blocks to the node
     nodeOne.addFacts(createFacts());
     assertEquals(2, nodeOne.getChain().getSize());
@@ -81,8 +87,8 @@ public class ConflictTest {
     assertEquals(2, nodeTwo.getChain().getSize());
 
     // Join the nodes into a cluster
-    nodeOne.addPeer(proxyTwo);
-    nodeTwo.addPeer(proxyOne);
+    cluster1.addPeer(proxyTwo);
+    cluster2.addPeer(proxyOne);
 
     // Add one more fact to the node
     nodeOne.addFacts(createFacts());
