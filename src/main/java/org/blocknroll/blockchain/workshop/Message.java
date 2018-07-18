@@ -22,12 +22,21 @@ public interface Message {
     }
   }
 
-  public static class AddFacts implements Serializable {
+  public static class MineFacts implements Serializable {
 
     public final Collection<Fact> facts;
 
-    public AddFacts(Collection<Fact> facts) {
+    public MineFacts(Collection<Fact> facts) {
       this.facts = facts;
+    }
+  }
+
+  public static class AddBlock implements Serializable {
+
+    public final Block block;
+
+    public AddBlock(Block block) {
+      this.block = block;
     }
   }
 

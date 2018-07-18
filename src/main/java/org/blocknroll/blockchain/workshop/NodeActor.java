@@ -4,6 +4,7 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import akka.cluster.protobuf.msg.ClusterMessages.MemberStatus;
 import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator.Subscribe;
 import akka.management.AkkaManagement;
@@ -23,10 +24,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.blocknroll.blockchain.workshop.Message.AddFacts;
+import org.blocknroll.blockchain.workshop.Message.MineFacts;
 import org.blocknroll.blockchain.workshop.Message.ProofOfWorkResponse;
 import org.blocknroll.blockchain.workshop.Message.RequestProofOfWork;
 
@@ -48,19 +48,22 @@ public class NodeActor extends AbstractActor implements Cluster {
       "   A PEER_NODE has the form IP:PORT, assuming localhost when IP is not given.");
   // cluster objects
   private static final Logger logger = LogManager.getLogger(NodeActor.class);
+  private static final float POW_THRESHOLD = 51.0f;
   // arguments
   public static String nodeHost = null;
-  //private Cluster cluster = Cluster.get(getContext().system());
   public static Integer nodePort = null;
   public static InetSocketAddress peerAddress = null;
-
+  private akka.cluster.Cluster cluster = akka.cluster.Cluster.get(getContext().system());
   private NodeImp node;
 
-  private Map<String, Integer> pow = new HashMap<>();
+  private Map<Long, Long> pow = new HashMap<>();
 
   public NodeActor() throws IOException, SodiumLibraryException {
     // Subscribe to events
     ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
+    mediator.tell(new Subscribe("MineFacts", getSelf()), getSelf());
+    mediator.tell(new Subscribe("RequestProofOfWork", getSelf()), getSelf());
+    mediator.tell(new Subscribe("ProofOfWorkResponse", getSelf()), getSelf());
     mediator.tell(new Subscribe("BlockMined", getSelf()), getSelf());
     node = new NodeImp(this);
   }
@@ -172,26 +175,9 @@ public class NodeActor extends AbstractActor implements Cluster {
     // create system & actor
     ActorSystem system = ActorSystem.create("ClusterSystem", config);
     ActorRef node = system.actorOf(Props.create(NodeActor.class), buildName(nodePort));
-    AkkaManagement.get(system).start();
-  }
-
-  //subscribe to cluster changes
-  @Override
-  public void preStart() {
-    /*
-    if (peerAddress != null) {
-      String address = peerAddress.toString().substring(1);
-      String name = buildName(peerAddress.getPort());
-      String path = "akka.tcp://ClusterSystem@" + address + "/user/" + name;
-      ActorRef actor = getContext().actorFor(path);
-      System.out.println(path);
-      ActorSelection selection = getContext().system()
-          .actorSelection(path); //getContext().actorSelection(path);
-      System.out.println(selection.pathString());
-      Message.Join msg = new Message.Join(nodeHost, nodePort);
-      selection.tell(msg, self());
+    if(nodePort == DEFAULT_PORT) {
+      AkkaManagement.get(system).start();
     }
-    */
   }
 
   @Override
@@ -203,20 +189,34 @@ public class NodeActor extends AbstractActor implements Cluster {
               System.out.println("-------------------------------------------------");
             }
         )
-        .match(AddFacts.class, req -> {
+        .match(MineFacts.class, req -> {
           logger.info("Mining facts ...");
           node.mineFacts(req.facts);
         })
         .match(RequestProofOfWork.class, req -> {
           logger.info("Proof of work requested for block " + req.block.getIdentifier());
-          new Message.ProofOfWorkResponse(req.block,
-              node.doProofOfWork(Collections.singletonList(req.block)));
+          if (!pow.containsKey(req.block.getIdentifier())) {
+            new Message.ProofOfWorkResponse(req.block,
+                node.verifyBlock(req.block, node.getLastBlock()));
+          } else {
+            logger.warn("Discarding block " + req.block.getIdentifier() + ". Already computed.");
+          }
         })
         .match(ProofOfWorkResponse.class, res -> {
           logger.info(
               "Proof of work response for block " + res.block.getIdentifier() + " is " + res.block
                   .getIdentifier());
-
+          if (node.getLastBlock().getIdentifier() < res.block.getIdentifier()) {
+            pow.compute(res.block.getIdentifier(), (k, v) -> (v != null) ? v + 1 : 1);
+            int count = cluster.state().members().filter(s -> (s.status().equals(MemberStatus.Up)))
+                .size();
+            if ((100.0f * pow.get(res.block.getIdentifier()) / count) > POW_THRESHOLD) {
+              node.processBlock(Collections.singletonList(res.block));
+            }
+          } else {
+            logger.warn("Discarding proof of work response for block " + res.block.getIdentifier()
+                + ". Already processed block with the same identifier.");
+          }
         })
         .build();
   }
@@ -251,12 +251,13 @@ public class NodeActor extends AbstractActor implements Cluster {
 
   @Override
   public void requestProofOfWork(Block block) throws Exception {
-
+    DistributedPubSub.get(getContext().system()).mediator()
+        .tell(new RequestProofOfWork(block), getSelf());
   }
 
   @Override
   public String getId() {
-    return nodeHost + ":" + nodePort;
+    return nodeHost + "_" + nodePort;
   }
 
   @Override
@@ -287,7 +288,7 @@ public class NodeActor extends AbstractActor implements Cluster {
 
   @Override
   public void processBlocks(List<Block> block) throws Exception {
-    node.doProofOfWork(block);
+    node.processBlock(block);
   }
 
   @Override

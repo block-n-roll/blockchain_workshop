@@ -92,16 +92,16 @@ public class NodeImp {
   /**
    * @param blocks the blocks to be processed.
    */
-  public boolean doProofOfWork(List<Block> blocks)
+  public void processBlock(List<Block> blocks)
       throws Exception {
-    return processBlockResponse(blocks, chain.getLastBlock());
+    processBlockResponse(blocks, chain.getLastBlock());
   }
 
   /**
    * This is invoked when other peers are requesting the chain.
    */
   public void requestChain() throws Exception {
-    doProofOfWork(chain.getBlocks());
+    processBlock(chain.getBlocks());
   }
 
   // -----------------------------------------------------------------------------------------------------------------
@@ -149,7 +149,7 @@ public class NodeImp {
    * @param blocks the blocks to be processed.
    * @return true if block is valid, false otherwise.
    */
-  private boolean processBlockResponse(List<Block> blocks, Block previous)
+  private void processBlockResponse(List<Block> blocks, Block previous)
       throws Exception {
     Block block = blocks.get(blocks.size() - 1);
     if (block.getIdentifier() > previous.getIdentifier()) {
@@ -158,8 +158,6 @@ public class NodeImp {
       if (block.getPreviousHash().equals(previous.getHash())) {
         logger.debug("This is a good block!");
         chain.addBlock(block);
-        cluster.requestProofOfWork(block);
-        return true;
       } else if (blocks.size() == 1) {
         logger.warn("Request the chain to the peers.");
         cluster.requestChain();
@@ -172,7 +170,6 @@ public class NodeImp {
     } else {
       logger.warn("The received block is in the past ... just ignore it.");
     }
-    return false;
   }
 
   /**
@@ -199,7 +196,7 @@ public class NodeImp {
    * @param newBlock the block to be verified.
    * @param previousBlock the block previous to the new one.
    */
-  private boolean verifyBlock(Block newBlock, Block previousBlock) throws SodiumLibraryException {
+  public boolean verifyBlock(Block newBlock, Block previousBlock) throws SodiumLibraryException {
     newBlock.getPreviousHash().rewind();
     previousBlock.getHash().rewind();
     if ((previousBlock.getIdentifier() + 1) != newBlock.getIdentifier()) {
