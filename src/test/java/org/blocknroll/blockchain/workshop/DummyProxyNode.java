@@ -17,16 +17,16 @@ public class DummyProxyNode implements Node {
     return node.getChain();
   }
 
-  public void addFacts(Collection<Fact> facts) throws SodiumLibraryException, IOException {
+  public void addFacts(Collection<Fact> facts) throws Exception {
     node.addFacts(facts);
   }
 
   public Collection<Node> getPeers() {
-    return node.getPeers();
+    return null; //node.getPeers();
   }
 
   public void addPeer(Node node) {
-    node.addPeer(node);
+    //node.addPeer(node);
   }
 
   public Block getLastBlock() {
@@ -34,11 +34,11 @@ public class DummyProxyNode implements Node {
   }
 
   public void processBlocks(Node sender, List<Block> blocks)
-      throws SodiumLibraryException, IOException {
+      throws Exception {
     node.processBlocks(sender, blocks);
   }
 
-  public void requestChain(Node sender) throws SodiumLibraryException, IOException {
+  public void requestChain(Node sender) throws Exception {
     sender.processBlocks(this, node.getChain().getBlocks());
   }
 }

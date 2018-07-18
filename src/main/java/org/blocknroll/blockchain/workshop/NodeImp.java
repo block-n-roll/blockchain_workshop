@@ -21,13 +21,10 @@ import org.apache.log4j.Logger;
  */
 public class NodeImp implements Node {
 
-  private final String ip;
-  private final int port;
-  private final String id;
+  private Cluster cluster;
   private Logger logger = LogManager.getLogger(NodeImp.class);
   private Miner miner;
   private Chain chain;
-  private Collection<Node> peers;
 
   // -----------------------------------------------------------------------------------------------------------------
   // Node methods
@@ -36,10 +33,9 @@ public class NodeImp implements Node {
   /**
    * Constructor.
    *
-   * @param ip the IP where this node is running.
-   * @param port the port where this node is running.
+   * @param cluster the cluster interface.
    */
-  public NodeImp(String ip, int port) throws IOException, SodiumLibraryException {
+  public NodeImp(Cluster cluster) throws IOException, SodiumLibraryException {
     // Generate the key pair if directory does not exist
     if (!Files.isDirectory(Paths.get("key"))) {
       Files.createDirectory(Paths.get("key"));
@@ -47,19 +43,16 @@ public class NodeImp implements Node {
     }
 
     // Initialise members
-    this.ip = ip;
-    this.port = port;
-    this.id = ip + port;
-    peers = new ArrayList<>();
-    chain = new Chain(id);
+    this.cluster = cluster;
+    chain = new Chain(cluster.getId());
     miner = new Miner();
 
     // Load the chain from disk if it exists or generate genesis block
-    if (Files.isDirectory(Paths.get("chain/" + id + "/"))) {
+    if (Files.isDirectory(Paths.get("chain/" + cluster.getId() + "/"))) {
       loadChain();
     } else {
       // Generate the genesis block if it does not exist
-      Paths.get("chain/" + id + "/").toFile().mkdirs();
+      Paths.get("chain/" + cluster.getId() + "/").toFile().mkdirs();
       chain.addBlock(new Block());
     }
   }
@@ -70,7 +63,7 @@ public class NodeImp implements Node {
    * @throws IOException throws input output or crypto exceptions.
    */
   private void loadChain() throws IOException, SodiumLibraryException {
-    try (DirectoryStream<Path> files = Files.newDirectoryStream(Paths.get("chain/" + id))) {
+    try (DirectoryStream<Path> files = Files.newDirectoryStream(Paths.get("chain/" + cluster.getId()))) {
       List<Block> blocks = StreamSupport.stream(files.spliterator(), false)
           .sorted((o1, o2) -> {
             try {
@@ -93,26 +86,9 @@ public class NodeImp implements Node {
           })
           .collect(Collectors.toList());
       if (verifyChain(blocks)) {
-        chain = new Chain(id, blocks);
+        chain = new Chain(cluster.getId(), blocks);
       }
     }
-  }
-
-  /**
-   * Add a peer node to the cluster.
-   */
-  public void addPeer(Node node) {
-    peers.add(node);
-    node.getLastBlock();
-  }
-
-  /**
-   * Returns the peers connected to this node.
-   *
-   * @return the peers connected to this node.
-   */
-  public Collection<Node> getPeers() {
-    return peers;
   }
 
   /**
@@ -120,7 +96,7 @@ public class NodeImp implements Node {
    * @param blocks the blocks to be processed.
    */
   public void processBlocks(Node sender, List<Block> blocks)
-      throws SodiumLibraryException, IOException {
+      throws Exception {
     processBlockResponse(sender, blocks, chain.getLastBlock());
   }
 
@@ -129,19 +105,8 @@ public class NodeImp implements Node {
    *
    * @param sender the sender node.
    */
-  public void requestChain(Node sender) throws SodiumLibraryException, IOException {
+  public void requestChain(Node sender) throws Exception {
     sender.processBlocks(this, chain.getBlocks());
-  }
-
-  /**
-   * Broadcast a message to all the nodes in the cluster.
-   *
-   * @param block the blocks to be sent to the cluster.
-   */
-  private void notifyNewBlock(Block block) throws SodiumLibraryException, IOException {
-    for (Node peer : peers) {
-      peer.processBlocks(this, Collections.singletonList(block));
-    }
   }
 
   // -----------------------------------------------------------------------------------------------------------------
@@ -153,7 +118,7 @@ public class NodeImp implements Node {
    *
    * @param facts the facts to be mined.
    */
-  public void addFacts(Collection<Fact> facts) throws SodiumLibraryException, IOException {
+  public void addFacts(Collection<Fact> facts) throws Exception {
     // Check inputs
     if (facts == null) {
       throw new IllegalArgumentException("Cannot create a fact with null values");
@@ -163,7 +128,7 @@ public class NodeImp implements Node {
     Block block = miner.mine(facts, chain.getLastBlock(), 2);
     if (verifyBlock(block, chain.getLastBlock())) {
       chain.addBlock(block);
-      notifyNewBlock(block);
+      cluster.notify(block);
       // TODO: Response OK
     }
     // TODO: Response ERROR
@@ -194,7 +159,7 @@ public class NodeImp implements Node {
    * @return true if block is valid, false otherwise.
    */
   private boolean processBlockResponse(Node sender, List<Block> blocks, Block previous)
-      throws SodiumLibraryException, IOException {
+      throws Exception {
     Block block = blocks.get(blocks.size() - 1);
     if (block.getIdentifier() > previous.getIdentifier()) {
       block.getPreviousHash().rewind();
@@ -202,7 +167,7 @@ public class NodeImp implements Node {
       if (block.getPreviousHash().equals(previous.getHash())) {
         logger.debug("This is a good block!");
         chain.addBlock(block);
-        notifyNewBlock(block);
+        cluster.notify(block);
         return true;
       } else if (blocks.size() == 1) {
         logger.warn("Request the chain to the peers.");
@@ -210,7 +175,7 @@ public class NodeImp implements Node {
       } else {
         logger.warn("Received blockchain is longer, replace current one.");
         if (verifyChain(blocks)) {
-          chain = new Chain(id, blocks);
+          chain = new Chain(cluster.getId(), blocks);
         }
       }
     } else {

@@ -169,7 +169,7 @@ public class NodeActor extends UntypedActor {
     // initialize
     checkArgs(args);
 
-// build configuration
+    // build configuration
     System.out.println("LOCALHOST: " + nodeHost);
     String seedAddress = "";
     if (peerAddress != null) {
@@ -179,9 +179,9 @@ public class NodeActor extends UntypedActor {
     }
     Properties ps = new Properties();
     ps.setProperty("akka.loglevel", "INFO");
-//ps.setProperty("akka.actor.provider", "akka.remote.RemoteActorRefProvider");
+    //ps.setProperty("akka.actor.provider", "akka.remote.RemoteActorRefProvider");
     ps.setProperty("akka.actor.provider", "cluster");
-//ps.setProperty("akka.remote.enabled-transports.0", "akka.remote.netty.tcp");
+    //ps.setProperty("akka.remote.enabled-transports.0", "akka.remote.netty.tcp");
     ps.setProperty("akka.cluster.seed-nodes.0", "akka.tcp://ClusterSystem@" + seedAddress);
     ps.setProperty("akka.remote.transport", "akka.remote.netty.NettyRemoteTransport");
     ps.setProperty("akka.remote.netty.tcp.hostname", nodeHost);
@@ -190,7 +190,6 @@ public class NodeActor extends UntypedActor {
     ps.setProperty("akka.remote.log-received-messages", "on");
     Config config = ConfigFactory.parseProperties(ps);
     System.out.println(config);
-
 
     // create system & actor
     ActorSystem system = ActorSystem.create("ClusterSystem", config);
