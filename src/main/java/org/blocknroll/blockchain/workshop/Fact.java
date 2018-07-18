@@ -93,14 +93,16 @@ public class Fact {
    * Deserialize the content of the buffer into this object.
    */
   void deserialise(ByteBuffer bb) {
-    // Write size of data and signature
+    // Get the size of the data and signature
     int dataSize = bb.getInt();
+    int sigSize = bb.getInt();
+
+    // Read the data
     data = ByteBuffer.allocate(dataSize);
     IntStream.range(0, dataSize).forEach(idx -> data.put(bb.get()));
     data.rewind();
 
-    // Write the data
-    int sigSize = bb.getInt();
+    // Read the signature
     signature = ByteBuffer.allocate(sigSize);
     IntStream.range(0, sigSize).forEach(idx -> signature.put(bb.get()));
     signature.rewind();
