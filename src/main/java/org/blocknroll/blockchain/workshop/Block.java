@@ -51,8 +51,9 @@ public class Block {
   Block(Collection<Fact> facts, Block prev) {
     // Init block's members non related to mining process.
     logger.debug("Creating block ...");
-    this.identifier = prev.identifier + 1;
-    this.facts = facts;
+    // TODO: Assign an identifier for the new block
+
+    // TODO: Assign the facts
     this.previousHash = ByteBuffer.allocate(HASH_SIZE);
     prev.hash.rewind();
     this.previousHash.put(prev.hash);
@@ -175,11 +176,8 @@ public class Block {
    * Returns the size of the facts.
    */
   private int getFactsSize() {
-    int size = 0;
-    for (Fact f : facts) {
-      size += f.getSize();
-    }
-    return size;
+    // TODO: Return the size of the facts in bytes (hint ... look at Fact::getBytes)
+    return 0;
   }
 
   /**
@@ -209,9 +207,11 @@ public class Block {
     previousHash.rewind();
     bb.put(previousHash);
     signature.rewind();
-    bb.put(signature);
+    // TODO: Serialise the signature here
+
     hash.rewind();
-    bb.put(hash);
+    // TODO: Serialise the hash here
+
     bb.rewind();
     return bb;
   }
@@ -229,9 +229,9 @@ public class Block {
     previousHash.rewind();
     IntStream.range(0, HASH_SIZE).forEach(idx -> previousHash.put(bb.get()));
     signature.rewind();
-    IntStream.range(0, SIGNATURE_SIZE).forEach(idx -> signature.put(bb.get()));
+    // TODO: Deserialise the signature here
     hash.rewind();
-    IntStream.range(0, HASH_SIZE).forEach(idx -> hash.put(bb.get()));
+    // TODO: Deserialise the hash here
     bb.rewind();
   }
 
@@ -242,8 +242,8 @@ public class Block {
    * @return true if both blocks are identical false otherwise.
    */
   public boolean equals(Object other) {
-    return (other != null) && (getClass() == other.getClass()) && serialise()
-        .equals(((Block) other).serialise());
+    // TODO: Compare two blocks ... (hint ... you can use serialisation)
+    return false;
   }
 
 }
