@@ -17,7 +17,6 @@ public class Block {
 
   private static final int FACTS_SIZE_FIELD = 4;
   private static final int ID_SIZE_FIELD = 8;
-  private static final int DIFF_SIZE_FIELD = 4;
   private static final int NONCE_SIZE_FIELD = 8;
   private static final int TIMESTAMP_SIZE_FIELD = 8;
   private static final Logger logger = LogManager.getLogger(Block.class);
@@ -25,7 +24,6 @@ public class Block {
   private Collection<Fact> facts;
   private ByteBuffer previousHash;
   private Long nonce;
-  private Integer difficulty;
   private Long timestamp;
   private ByteBuffer hash;
   private ByteBuffer signature;
@@ -36,7 +34,7 @@ public class Block {
   Block() {
     // Init Genesis block
     logger.debug("Creating block genesis block");
-    final String genesis = "000000000000000000000000000000000000000000000002736F16E8817EA45A00000164A350AC960000000000000000000000000000000000000000000000000000000000000000AA2537DAE96F41B7D5CF696C6168EE524D48DF9F48A46A2C6934CFAC85D1D78CE03233F6D8E3D3A02D3F07D59BB55CA4BB185DB050CFE0B56F1969D7C8C5510200007AF0D2DBEE710D25DB0C20BD214D90E693798F0A315C169AF28971D1931B";
+    final String genesis = "000000000000000000000000000000000000000000000164AA2133AD0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000AA2537DAE96F41B7D5CF696C6168EE524D48DF9F48A46A2C6934CFAC85D1D78CE03233F6D8E3D3A02D3F07D59BB55CA4BB185DB073B796D604455465432B624786380AB4F1E6EE6E934482B43D3266C561767B0F";
     this.facts = new ArrayList<>();
     this.previousHash = ByteBuffer.allocate(HASH_SIZE);
     this.hash = ByteBuffer.allocate(HASH_SIZE);
@@ -50,7 +48,7 @@ public class Block {
    * @param facts the facts to be consolidated in this block.
    * @param prev the previous block.
    */
-  Block(Collection<Fact> facts, Block prev, int diff) {
+  Block(Collection<Fact> facts, Block prev) {
     // Init block's members non related to mining process.
     logger.debug("Creating block ...");
     this.identifier = prev.identifier + 1;
@@ -60,7 +58,6 @@ public class Block {
     this.previousHash.put(prev.hash);
     this.hash = ByteBuffer.allocate(HASH_SIZE);
     this.signature = ByteBuffer.allocate(SIGNATURE_SIZE);
-    this.difficulty = diff;
     logger.debug("Pointing to previous " + CryptoUtil.bufferToHexString(prev.hash));
   }
 
@@ -104,7 +101,16 @@ public class Block {
    * @return the previous hash.
    */
   ByteBuffer getPreviousHash() {
+    previousHash.rewind();
     return previousHash;
+  }
+
+  /**
+   * Returns the previous hash.
+   */
+  void resetPreviousHash() {
+    previousHash = ByteBuffer.allocateDirect(HASH_SIZE);
+    previousHash.rewind();
   }
 
   /**
@@ -132,6 +138,7 @@ public class Block {
    * @return the signature for this block.
    */
   ByteBuffer getSignature() {
+    signature.rewind();
     return signature;
   }
 
@@ -181,7 +188,7 @@ public class Block {
    * @return the size in bytes for this block.
    */
   int getSize() {
-    return ID_SIZE_FIELD + FACTS_SIZE_FIELD + getFactsSize() + DIFF_SIZE_FIELD + NONCE_SIZE_FIELD +
+    return ID_SIZE_FIELD + FACTS_SIZE_FIELD + getFactsSize() + NONCE_SIZE_FIELD +
         TIMESTAMP_SIZE_FIELD + HASH_SIZE + SIGNATURE_SIZE + HASH_SIZE;
   }
 
@@ -197,7 +204,6 @@ public class Block {
     for (Fact f : facts) {
       bb.put(f.serialise());
     }
-    bb.putInt(difficulty);
     bb.putLong(nonce);
     bb.putLong(timestamp);
     previousHash.rewind();
@@ -218,7 +224,6 @@ public class Block {
   void deserialise(final ByteBuffer bb) {
     identifier = bb.getLong();
     IntStream.range(0, bb.getInt()).forEach(idx -> facts.add(new Fact(bb)));
-    difficulty = bb.getInt();
     nonce = bb.getLong();
     timestamp = bb.getLong();
     previousHash.rewind();
@@ -237,14 +242,8 @@ public class Block {
    * @return true if both blocks are identical false otherwise.
    */
   public boolean equals(Object other) {
-    return (other != null) && serialise().equals(((Block) other).serialise());
+    return (other != null) && (getClass() == other.getClass()) && serialise()
+        .equals(((Block) other).serialise());
   }
 
-  public Integer getDifficulty() {
-    return difficulty;
-  }
-
-  public void setDifficulty(Integer difficulty) {
-    this.difficulty = difficulty;
-  }
 }

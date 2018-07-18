@@ -3,17 +3,13 @@
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>block-n-roll</groupId>
   <artifactId>blockchain-workshop</artifactId>
   <version>1.0-SNAPSHOT</version>
-
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
-
   <dependencies>
     <dependency>
       <groupId>log4j</groupId>
@@ -32,6 +28,47 @@
       <artifactId>libsodium-jna</artifactId>
       <version>1.0.4</version>
     </dependency>
+    <dependency>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-cluster-tools_2.12</artifactId>
+      <version>2.5.13</version>
+    </dependency>
+    <dependency>
+      <groupId>com.lightbend.akka.management</groupId>
+      <artifactId>akka-management-cluster-http_2.12</artifactId>
+      <version>0.16.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.lightbend.akka.management</groupId>
+      <artifactId>akka-management_2.12</artifactId>
+      <version>0.16.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-remote_2.12</artifactId>
+      <version>2.5.13</version>
+    </dependency>
   </dependencies>
-
+  <build>
+    <finalName>../lib/blockchain-workshop</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.1.1</version>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>lib</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
