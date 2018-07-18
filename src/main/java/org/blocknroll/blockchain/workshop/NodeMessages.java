@@ -10,7 +10,6 @@ public interface NodeMessages {
     public int port;
 
     public Join(String host, int port) {
-      System.out.println("[" + host + ":" + port + "]");
       this.host = host;
       this.port = port;
     }
@@ -22,8 +21,9 @@ public interface NodeMessages {
     }
   }
 
-  public static class AddFacts implements Serializable{
-    public AddFacts (String filename)
-    {}
+  public static class AddFacts implements Serializable {
+
+    public AddFacts(String filename) {
+    }
   }
 }
