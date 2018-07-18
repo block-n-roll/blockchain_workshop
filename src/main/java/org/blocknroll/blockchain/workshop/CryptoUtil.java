@@ -1,8 +1,12 @@
 package org.blocknroll.blockchain.workshop;
 
+import com.muquit.libsodiumjna.SodiumKeyPair;
 import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Random;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.log4j.LogManager;
@@ -15,40 +19,68 @@ class CryptoUtil {
 
   static final int HASH_SIZE = 32;
   static final int SIGNATURE_SIZE = 64;
-  private static Random random = new Random();
-  private static Logger logger = LogManager.getLogger(NodeImp.class);
+  private static final Random random = new Random();
+  private static final Logger logger = LogManager.getLogger(CryptoUtil.class);
 
   static {
     SodiumLibrary.setLibraryPath("lib/libsodium.dll");
   }
 
+  /**
+   * Signs a chunk of data with the private key.
+   *
+   * @param data the data to be signed.
+   * @param secretKey the secret key.
+   * @return the signature for the data.
+   * @throws SodiumLibraryException throws if signature failed.
+   */
   private static ByteBuffer sign(ByteBuffer data, ByteBuffer secretKey)
       throws SodiumLibraryException {
+    logger.trace("Signing data: " + bufferToHexString(data));
     data.rewind();
     secretKey.rewind();
     byte[] dat = new byte[data.limit()];
     data.get(dat);
     byte[] sec = new byte[secretKey.limit()];
     secretKey.get(sec);
-    byte[] sig = SodiumLibrary.cryptoSign(dat, sec);
-    ByteBuffer sign = ByteBuffer.allocateDirect(sig.length);
-    sign.put(sig);
-    return sign;
-  }
-
-  private static boolean verify(ByteBuffer data, ByteBuffer pubKey) {
-    // TODO
-    return true;
+    byte[] sig = SodiumLibrary.cryptoSignDetached(dat, sec);
+    ByteBuffer signature = ByteBuffer.allocate(sig.length);
+    signature.put(sig);
+    logger.trace("Created signature: " + bufferToHexString(signature));
+    return signature;
   }
 
   /**
-   * Signs a document with the given secret key and returns the signature for that document.
+   * Verify a message and signature with a given public key
    *
-   * @param fact the document to be signed.
+   * @param signature the signature.
+   * @param data the content to be verified.
+   * @param pubKey the public key.
+   * @return true if message and signature correspong with the given public key.
+   * @throws SodiumLibraryException throw if verification failed.
+   */
+  private static boolean verify(ByteBuffer signature, ByteBuffer data, ByteBuffer pubKey)
+      throws SodiumLibraryException {
+    logger.trace("Verifying data: " + bufferToHexString(data));
+    signature.rewind();
+    byte[] sig = new byte[signature.limit()];
+    data.rewind();
+    byte[] dat = new byte[data.limit()];
+    pubKey.rewind();
+    byte[] pub = new byte[pubKey.limit()];
+    pubKey.get(pub);
+    return SodiumLibrary.cryptoSignVerifyDetached(sig, dat, pub);
+  }
+
+  /**
+   * Signs a fact with the given secret key and returns the signature for that document.
+   *
+   * @param fact the fact to be signed.
    * @param secKey the secret key to sign the document.
    * @return the signature for the given doc and secret key.
    */
   static ByteBuffer sign(Fact fact, ByteBuffer secKey) throws SodiumLibraryException {
+    logger.trace("Signing fact ...");
     return CryptoUtil.sign(fact.getData(), secKey);
   }
 
@@ -59,8 +91,9 @@ class CryptoUtil {
    * @param pubKey the key used to proof the fact.
    * @return true if the fact is authentic, false otherwise.
    */
-  static boolean verify(Fact fact, ByteBuffer pubKey) {
-    return verify(fact.getData(), pubKey);
+  static boolean verify(Fact fact, ByteBuffer pubKey) throws SodiumLibraryException {
+    logger.trace("Verifying fact ...");
+    return verify(fact.getSignature(), fact.getData(), pubKey);
   }
 
   /**
@@ -71,6 +104,7 @@ class CryptoUtil {
    * @return the signature for the given block and secret key.
    */
   static ByteBuffer sign(Block block, ByteBuffer secKey) throws SodiumLibraryException {
+    logger.trace("Signing block ...");
     return CryptoUtil.sign(block.serialise(), secKey);
   }
 
@@ -81,22 +115,22 @@ class CryptoUtil {
    * @param pubKey the key used to proof the block.
    * @return true if the block is authentic, false otherwise.
    */
-  static boolean verify(Block block, ByteBuffer pubKey) {
-    return verify(block.serialise(), pubKey);
+  static boolean verify(Block block, ByteBuffer pubKey) throws SodiumLibraryException {
+    logger.trace("Verifying block ...");
+    return verify(block.getSignature(), block.serialise(), pubKey);
   }
 
   /**
-   * This is the function to
+   * This is the function that calculate a hash for a block.
    */
   static ByteBuffer calculateHash(Block doc) throws SodiumLibraryException {
     // Clean the hash and signatures cannot be considered on hash calculations
-    byte[] payload = new byte[doc.getSize() - HASH_SIZE - SIGNATURE_SIZE];
+    byte[] payload = new byte[doc.getSize() - HASH_SIZE];
     doc.serialise().get(payload);
-    byte[] h = SodiumLibrary.cryptoGenerichash(payload, 32);
-    ByteBuffer hash = ByteBuffer.allocateDirect(h.length);
+    byte[] h = SodiumLibrary.cryptoGenerichash(payload, HASH_SIZE);
+    ByteBuffer hash = ByteBuffer.allocate(h.length);
     hash.put(h);
     hash.rewind();
-    bufferToHexString(hash);
     return hash;
   }
 
@@ -110,13 +144,26 @@ class CryptoUtil {
   }
 
   /**
-   * Generates a pair public and secret keys into the given buffers.
-   *
-   * @param pub the generated public key.
-   * @param sec the generated secret key.
+   * Loads a pair public and secret keys from the given path.
    */
-  static void generatePublicSecretKeys(ByteBuffer pub, ByteBuffer sec) {
-    // TODO:
+  static ByteBuffer loadKey(String path) throws IOException {
+    byte[] k = Files.readAllBytes(Paths.get(path));
+    ByteBuffer key = ByteBuffer.allocate(k.length);
+    key.put(k);
+    key.rewind();
+    return key;
+  }
+
+  /**
+   * Generates a pair public and secret keys into the given buffers.
+   */
+  static void generatePublicSecretKeys(String pubPath, String secPath)
+      throws SodiumLibraryException, IOException {
+    SodiumKeyPair kp = SodiumLibrary.cryptoBoxKeyPair();
+    byte[] pub = kp.getPublicKey();
+    byte[] sec = kp.getPrivateKey();
+    Files.write(Paths.get(pubPath), pub);
+    Files.write(Paths.get(secPath), sec);
   }
 
   /**
@@ -132,5 +179,19 @@ class CryptoUtil {
     String hexStr = DatatypeConverter.printHexBinary(buff);
     bb.rewind();
     return hexStr;
+  }
+
+  /**
+   * Converts from hex string into a byte buffer.
+   *
+   * @param hex the hex string to be converted.
+   * @return the byte buffer containing the hexadecimal information.
+   */
+  static ByteBuffer hexStringToByteBuffer(String hex) {
+    byte[] b = DatatypeConverter.parseHexBinary(hex);
+    ByteBuffer bb = ByteBuffer.allocate(b.length);
+    bb.put(b);
+    bb.rewind();
+    return bb;
   }
 }

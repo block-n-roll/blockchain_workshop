@@ -1,6 +1,7 @@
 package org.blocknroll.blockchain.workshop;
 
 import java.nio.ByteBuffer;
+import java.util.stream.IntStream;
 
 /**
  * This represents a fact to be mined into a block.
@@ -24,6 +25,13 @@ public class Fact {
   }
 
   /**
+   * Class constructor
+   */
+  Fact(ByteBuffer fact) {
+    deserialise(fact);
+  }
+
+  /**
    * Returns the data associated to this fact.
    *
    * @return the data associated to this fact.
@@ -44,7 +52,7 @@ public class Fact {
   /**
    * Returns the size of this fact.
    *
-   * @returnthe size of this fact.
+   * @return the size of this fact.
    */
   int getSize() {
     // Get the size of the data and signature and join the two buffers
@@ -62,7 +70,7 @@ public class Fact {
     // Get the size of the data and signature and join the two buffers
     data.rewind();
     signature.rewind();
-    ByteBuffer bb = ByteBuffer.allocateDirect(getSize());
+    ByteBuffer bb = ByteBuffer.allocate(getSize());
 
     // Write size of data and signature
     bb.putInt(data.limit());
@@ -71,7 +79,25 @@ public class Fact {
     // Write the data
     bb.put(data);
     bb.put(signature);
+    bb.rewind();
     return bb;
+  }
+
+  /**
+   * Deserialize the content of the buffer into this object.
+   */
+  void deserialise(ByteBuffer bb) {
+    // Write size of data and signature
+    int dataSize = bb.getInt();
+    data = ByteBuffer.allocate(dataSize);
+    IntStream.range(0, dataSize).forEach(idx -> data.put(bb.get()));
+    data.rewind();
+
+    // Write the data
+    int sigSize = bb.getInt();
+    signature = ByteBuffer.allocate(sigSize);
+    IntStream.range(0, sigSize).forEach(idx -> signature.put(bb.get()));
+    signature.rewind();
   }
 
   /**

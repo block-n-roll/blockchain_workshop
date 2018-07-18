@@ -23,6 +23,9 @@ Workshop describing the functionality of a blockchain (mining, consensus, confli
                                +--------------------+
 ```
 
+# blockchain_workshop status
+![Build status](https://travis-ci.com/block-n-roll/blockchain_workshop.svg?branch=master)
+
 # Contribution
 We follow google code style for this repository.
 Please find below the files to configure your IDE:

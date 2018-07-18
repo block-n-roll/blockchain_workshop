@@ -6,7 +6,6 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
-import akka.actor.Address;
 import akka.actor.PoisonPill;
 import akka.actor.Props;
 import akka.cluster.Cluster;
@@ -15,8 +14,6 @@ import akka.cluster.ClusterEvent.MemberEvent;
 import akka.cluster.ClusterEvent.UnreachableMember;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 
@@ -52,77 +49,16 @@ public class NodeMain extends AbstractActor {
       "   All NODES are in the form IP:PORT, assuming localhost when IP is not given.");
   private final static String DEFAULT_HOST = "127.0.0.1";
   private final static int DEFAULT_PORT = 2550;
-
-  // node comands
-  enum Command {
-    START, STOP, JOIN, LEAVE, MINE_FACTS, GET_CHAIN, UPDATE_CHAIN, STATUS
-  }
-
   // cluster objects
   private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
   private Cluster cluster = Cluster.get(getContext().system());
-
-  // input arguments
-  private static class Arguments implements Serializable {
-
-    public Command command = null;
-    public InetSocketAddress nodeAddress = null;
-    public InetSocketAddress peerAddress = null;
-    public String facts = null;
-  }
-
-  private static String nodeName(String prefix, InetSocketAddress address) {
-    return prefix + "@" + address.getHostName() + ":" + address.getPort();
-  }
-
-  public NodeMain(Arguments args)
-  {
+  public NodeMain(Arguments args) {
     System.out.println("Aquí estamos");
     self().tell(args, self());
   }
 
-  @Override
-  public void preStart() {
-    cluster.subscribe(self(), ClusterEvent.initialStateAsEvents(), MemberEvent.class,
-        UnreachableMember.class);
-  }
-
-  @Override
-  public void postStop() {
-    cluster.unsubscribe(self());
-  }
-
-  @Override
-  public Receive createReceive() {
-    return receiveBuilder()
-        .match(String.class, msg -> {
-              System.out.println("-------------------------------------------------");
-              System.out.println(msg);
-              System.out.println("-------------------------------------------------");
-            }
-        )
-        .match(Arguments.class, msg -> {
-          // cluster.join(msg.nodeAddress);
-          String nodeName = nodeName("node", msg.nodeAddress);
-          switch (msg.command) {
-            case START:
-              ActorRef node = getContext().actorOf(Props.create(NodeActor.class));
-              //ActorRef node = NodeActor.startup(msg.nodeAddress);
-              if (msg.peerAddress != null) {
-                node.tell(
-                    new NodeMessages.Join(msg.peerAddress.getHostName(), msg.peerAddress.getPort()),
-                    getSelf());
-              }
-              break;
-
-            case STOP: {
-              ActorSelection selection = getContext().actorSelection(nodeName);
-              selection.tell(PoisonPill.getInstance(), getSelf());
-              break;
-            }
-          }
-        })
-        .build();
+  private static String nodeName(String prefix, InetSocketAddress address) {
+    return prefix + "@" + address.getHostName() + ":" + address.getPort();
   }
 
   private static Arguments checkArgs(String[] args) {
@@ -258,5 +194,63 @@ public class NodeMain extends AbstractActor {
       node.tell(new NodeMessages.Join(peerHost, peerPort), node);
     }
     */
+  }
+
+  @Override
+  public void preStart() {
+    cluster.subscribe(self(), ClusterEvent.initialStateAsEvents(), MemberEvent.class,
+        UnreachableMember.class);
+  }
+
+  @Override
+  public void postStop() {
+    cluster.unsubscribe(self());
+  }
+
+  @Override
+  public Receive createReceive() {
+    return receiveBuilder()
+        .match(String.class, msg -> {
+              System.out.println("-------------------------------------------------");
+              System.out.println(msg);
+              System.out.println("-------------------------------------------------");
+            }
+        )
+        .match(Arguments.class, msg -> {
+          // cluster.join(msg.nodeAddress);
+          String nodeName = nodeName("node", msg.nodeAddress);
+          switch (msg.command) {
+            case START:
+              ActorRef node = getContext().actorOf(Props.create(NodeActor.class));
+              //ActorRef node = NodeActor.startup(msg.nodeAddress);
+              if (msg.peerAddress != null) {
+                node.tell(
+                    new NodeMessages.Join(msg.peerAddress.getHostName(), msg.peerAddress.getPort()),
+                    getSelf());
+              }
+              break;
+
+            case STOP: {
+              ActorSelection selection = getContext().actorSelection(nodeName);
+              selection.tell(PoisonPill.getInstance(), getSelf());
+              break;
+            }
+          }
+        })
+        .build();
+  }
+
+  // node comands
+  enum Command {
+    START, STOP, JOIN, LEAVE, MINE_FACTS, GET_CHAIN, UPDATE_CHAIN, STATUS
+  }
+
+  // input arguments
+  private static class Arguments implements Serializable {
+
+    public Command command = null;
+    public InetSocketAddress nodeAddress = null;
+    public InetSocketAddress peerAddress = null;
+    public String facts = null;
   }
 }
