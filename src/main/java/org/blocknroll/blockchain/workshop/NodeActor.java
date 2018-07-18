@@ -175,7 +175,7 @@ public class NodeActor extends AbstractActor implements Cluster {
     // create system & actor
     ActorSystem system = ActorSystem.create("ClusterSystem", config);
     ActorRef node = system.actorOf(Props.create(NodeActor.class), buildName(nodePort));
-    if(nodePort == DEFAULT_PORT) {
+    if (nodePort == DEFAULT_PORT) {
       AkkaManagement.get(system).start();
     }
   }

@@ -19,9 +19,10 @@ import org.apache.log4j.Logger;
  */
 public class NodeImp {
 
-  private Cluster cluster;
-  private Logger logger = LogManager.getLogger(NodeImp.class);
-  private Miner miner;
+  public static final int DIFFICULTY = 1;
+  final private Cluster cluster;
+  final private Logger logger = LogManager.getLogger(NodeImp.class);
+  final private Miner miner;
   private Chain chain;
 
   // -----------------------------------------------------------------------------------------------------------------
@@ -61,7 +62,8 @@ public class NodeImp {
    * @throws IOException throws input output or crypto exceptions.
    */
   private void loadChain() throws IOException, SodiumLibraryException {
-    try (DirectoryStream<Path> files = Files.newDirectoryStream(Paths.get("chain/" + cluster.getId()))) {
+    try (DirectoryStream<Path> files = Files
+        .newDirectoryStream(Paths.get("chain/" + cluster.getId()))) {
       List<Block> blocks = StreamSupport.stream(files.spliterator(), false)
           .sorted((o1, o2) -> {
             try {
@@ -92,16 +94,16 @@ public class NodeImp {
   /**
    * @param blocks the blocks to be processed.
    */
-  public void processBlock(List<Block> blocks)
+  public boolean processBlock(List<Block> blocks)
       throws Exception {
-    processBlockResponse(blocks, chain.getLastBlock());
+    return processBlockResponse(blocks, chain.getLastBlock());
   }
 
   /**
    * This is invoked when other peers are requesting the chain.
    */
-  public void requestChain() throws Exception {
-    processBlock(chain.getBlocks());
+  public Chain requestChain() throws Exception {
+    return chain;
   }
 
   // -----------------------------------------------------------------------------------------------------------------
@@ -120,8 +122,9 @@ public class NodeImp {
     }
 
     // Mine block, verify it and add it to the chain.
-    Block block = miner.mine(facts, chain.getLastBlock(), 2);
-    logger.info("Mining facts into block " + block.getIdentifier());
+    logger.info("Mining facts into block ...");
+    Block block = miner.mine(facts, chain.getLastBlock(), DIFFICULTY);
+    logger.info("Facts mined into block " + block.getIdentifier());
     cluster.requestProofOfWork(block);
   }
 
@@ -149,7 +152,7 @@ public class NodeImp {
    * @param blocks the blocks to be processed.
    * @return true if block is valid, false otherwise.
    */
-  private void processBlockResponse(List<Block> blocks, Block previous)
+  private boolean processBlockResponse(List<Block> blocks, Block previous)
       throws Exception {
     Block block = blocks.get(blocks.size() - 1);
     if (block.getIdentifier() > previous.getIdentifier()) {
@@ -158,6 +161,7 @@ public class NodeImp {
       if (block.getPreviousHash().equals(previous.getHash())) {
         logger.debug("This is a good block!");
         chain.addBlock(block);
+        return true;
       } else if (blocks.size() == 1) {
         logger.warn("Request the chain to the peers.");
         cluster.requestChain();
@@ -170,6 +174,7 @@ public class NodeImp {
     } else {
       logger.warn("The received block is in the past ... just ignore it.");
     }
+    return false;
   }
 
   /**

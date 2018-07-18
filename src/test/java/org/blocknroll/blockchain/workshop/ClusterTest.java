@@ -12,12 +12,10 @@ import org.junit.Test;
 
 public class ClusterTest {
 
-  private Cluster cluster1;
-  private Cluster cluster2;
-  private NodeImp nodeOne;
-  private Cluster proxyOne;
-  private NodeImp nodeTwo;
-  private Cluster proxyTwo;
+  private DummyCluster cluster1;
+  private DummyCluster cluster2;
+  private NodeImp node1;
+  private NodeImp node2;
 
   private Collection<Fact> createFacts() {
     Collection<Fact> facts = new ArrayList<Fact>();
@@ -29,19 +27,21 @@ public class ClusterTest {
   public void setup() throws IOException, SodiumLibraryException {
     // Create nodes
     cluster1 = new DummyCluster("localhost1111");
-    nodeOne = new NodeImp(cluster1);
+    node1 = new NodeImp(cluster1);
+
     cluster2 = new DummyCluster("localhost2222");
-    nodeTwo = new NodeImp(cluster2);
+    node2 = new NodeImp(cluster2);
+
   }
 
   @Test
   public void addPeer() {
     assertEquals(cluster1.getPeers().size(), 0);
     assertEquals(cluster2.getPeers().size(), 0);
-    cluster1.addPeer(proxyTwo);
+    cluster1.addPeer(cluster2);
     assertEquals(cluster1.getPeers().size(), 1);
     assertEquals(cluster2.getPeers().size(), 0);
-    cluster2.addPeer(proxyOne);
+    cluster2.addPeer(cluster1);
     assertEquals(cluster1.getPeers().size(), 1);
     assertEquals(cluster2.getPeers().size(), 1);
   }

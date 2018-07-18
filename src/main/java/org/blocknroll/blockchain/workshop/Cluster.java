@@ -49,8 +49,6 @@ public interface Cluster {
 
   /**
    * Process a block requested from other peer node.
-   *
-   *
    */
   void processBlocks(List<Block> block) throws Exception;
 

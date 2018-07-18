@@ -10,10 +10,16 @@ public class DummyCluster implements Cluster {
   private Cluster seed;
   private String name;
   private List<Cluster> peers;
+  private NodeImp node;
 
   public DummyCluster(String name) {
+    this.node = node;
     this.name = name;
     this.peers = new ArrayList<>();
+  }
+
+  public void setSeed(NodeImp node) {
+    this.node = node;
   }
 
   public void setSeed(Cluster seed) {
@@ -22,8 +28,9 @@ public class DummyCluster implements Cluster {
 
   @Override
   public void requestProofOfWork(Block block) throws Exception {
+    node.processBlock(Collections.singletonList(block));
     for (Cluster peer : peers) {
-      peer.processBlocks(Collections.singletonList(block));
+      ((DummyCluster) peer).node.processBlock(Collections.singletonList(block));
     }
   }
 
@@ -44,26 +51,28 @@ public class DummyCluster implements Cluster {
 
   @Override
   public void addFacts(Collection<Fact> facts) throws Exception {
-    seed.addFacts(facts);
+    node.mineFacts(facts);
   }
 
   @Override
   public Chain getChain() {
-    return seed.getChain();
+    return node.getChain();
   }
 
   @Override
   public Block getLastBlock() {
-    return seed.getLastBlock();
+    return node.getLastBlock();
   }
 
   @Override
   public void processBlocks(List<Block> block) throws Exception {
-    seed.processBlocks(block);
+    node.processBlock(block);
   }
 
   @Override
   public void requestChain() throws Exception {
-    seed.requestChain();
+    Chain chain;
+    chain = ((DummyCluster) peers.get(0)).node.requestChain();
+    node.processBlock(chain.getBlocks());
   }
 }

@@ -18,12 +18,10 @@ import org.junit.Test;
 
 public class ConflictTest {
 
-  private Cluster cluster1;
-  private Cluster cluster2;
-  private NodeImp nodeOne;
-  private Cluster proxyOne;
-  private NodeImp nodeTwo;
-  private Cluster proxyTwo;
+  private DummyCluster cluster1;
+  private DummyCluster cluster2;
+  private NodeImp node1;
+  private NodeImp node2;
 
   private Collection<Fact> createFacts() {
     Collection<Fact> facts = new ArrayList<>();
@@ -44,54 +42,60 @@ public class ConflictTest {
 
     // Create nodes
     cluster1 = new DummyCluster("localhost1111");
-    nodeOne = new NodeImp(cluster1);
+    node1 = new NodeImp(cluster1);
     cluster2 = new DummyCluster("localhost2222");
-    nodeTwo = new NodeImp(cluster2);
+    node2 = new NodeImp(cluster2);
+
+    // Join the cluster
+    cluster1.setSeed(cluster2);
+    cluster1.setSeed(node1);
+    cluster2.setSeed(cluster1);
+    cluster2.setSeed(node2);
   }
 
   @Test
   public void testDifferentChainsDifferentSizes() throws Exception {
     // Add two blocks to the node
-    nodeOne.mineFacts(createFacts());
-    nodeOne.mineFacts(createFacts());
-    assertEquals(3, nodeOne.getChain().getSize());
+    node1.mineFacts(createFacts());
+    node1.mineFacts(createFacts());
+    assertEquals(3, node1.getChain().getSize());
 
     // add one fact to another node
-    nodeTwo.mineFacts(createFacts());
-    assertEquals(2, nodeTwo.getChain().getSize());
+    node2.mineFacts(createFacts());
+    assertEquals(2, node2.getChain().getSize());
 
-    // Join the nodes into a cluster
-    cluster1.addPeer(proxyTwo);
-    cluster2.addPeer(proxyOne);
+    // Join the cluster
+    cluster1.addPeer(cluster2);
+    cluster2.addPeer(cluster1);
 
     // Add one more fact to the node
-    nodeOne.mineFacts(createFacts());
-    assertEquals(nodeTwo.getChain().getBlocks().size(), 4);
-    assertEquals(nodeOne.getChain().getBlocks().size(), 4);
-    assertTrue(nodeOne.verifyChain(nodeTwo.getChain().getBlocks()));
-    assertTrue(nodeTwo.verifyChain(nodeOne.getChain().getBlocks()));
+    node1.mineFacts(createFacts());
+    assertEquals(node2.getChain().getBlocks().size(), 4);
+    assertEquals(node1.getChain().getBlocks().size(), 4);
+    assertTrue(node1.verifyChain(node2.getChain().getBlocks()));
+    assertTrue(node2.verifyChain(node1.getChain().getBlocks()));
   }
 
   @Test
   public void testDifferentChainsSameSize() throws Exception {
     // Add two blocks to the node
-    nodeOne.mineFacts(createFacts());
-    assertEquals(2, nodeOne.getChain().getSize());
+    node1.mineFacts(createFacts());
+    assertEquals(2, node1.getChain().getSize());
 
     // add one fact to another node
-    nodeTwo.mineFacts(createFacts());
-    assertEquals(2, nodeTwo.getChain().getSize());
+    node2.mineFacts(createFacts());
+    assertEquals(2, node2.getChain().getSize());
 
-    // Join the nodes into a cluster
-    cluster1.addPeer(proxyTwo);
-    cluster2.addPeer(proxyOne);
+    // Join the cluster
+    cluster1.addPeer(cluster2);
+    cluster2.addPeer(cluster1);
 
     // Add one more fact to the node
-    nodeOne.mineFacts(createFacts());
-    assertEquals(nodeTwo.getChain().getBlocks().size(), 3);
-    assertEquals(nodeOne.getChain().getBlocks().size(), 3);
-    assertTrue(nodeOne.verifyChain(nodeTwo.getChain().getBlocks()));
-    assertTrue(nodeTwo.verifyChain(nodeOne.getChain().getBlocks()));
+    node1.mineFacts(createFacts());
+    assertEquals(3, node2.getChain().getBlocks().size());
+    assertEquals(3, node1.getChain().getBlocks().size());
+    assertTrue(node1.verifyChain(node2.getChain().getBlocks()));
+    assertTrue(node2.verifyChain(node1.getChain().getBlocks()));
   }
 
 }
