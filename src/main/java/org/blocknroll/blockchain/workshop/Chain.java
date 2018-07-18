@@ -30,8 +30,7 @@ public class Chain {
    * @param blocks the blocks forming the chain.
    */
   Chain(String name, List<Block> blocks) {
-    this.id = name;
-    chain = blocks;
+    // TODO add the identifier and blocks here
   }
 
   /**
@@ -54,7 +53,8 @@ public class Chain {
    * @return the last block of the chain.
    */
   Block getLastBlock() {
-    return chain.get(chain.size() - 1);
+    // TODO: Return the last block here
+    return null;
   }
 
   /**
@@ -63,7 +63,8 @@ public class Chain {
    * @return the list of blocks that forms the chain.
    */
   public List<Block> getBlocks() {
-    return chain;
+    // TODO: Return the list of blocks that compose this chain
+    return null;
   }
 
   /**
@@ -72,7 +73,8 @@ public class Chain {
    * @return the number of blocks in the chain.
    */
   public int getSize() {
-    return chain.size();
+    // TODO: Return the number of nodes of this chain
+    return 0;
   }
 
 
