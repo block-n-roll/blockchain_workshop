@@ -26,8 +26,8 @@ public class Fact {
     if ((sig == null) || (sig.limit() == 0)) {
       throw new IllegalArgumentException("Signature cannot be null");
     }
-    data = dat;
-    signature = sig;
+
+    // TODO: Store the data and signature
   }
 
   /**
@@ -82,9 +82,8 @@ public class Fact {
     bb.putInt(data.limit());
     bb.putInt(signature.limit());
 
-    // Write the data
-    bb.put(data);
-    bb.put(signature);
+    // TODO: Write the data and signature respectively
+
     bb.rewind();
     return bb;
   }
