@@ -27,8 +27,7 @@ class Miner {
       CryptoUtil.generatePublicSecretKeys("key/pub.key", "key/sec.key");
     }
 
-    // Load secret key to sign mined blocks
-    secretKey = CryptoUtil.loadKey("key/sec.key");
+    // TODO: Load secret key to sign mined blocks (hint see CryptoUtil)
   }
 
   /**
@@ -49,7 +48,8 @@ class Miner {
    * @return the mined block.
    */
   Block mine(Block block, int difficulty) throws SodiumLibraryException {
-    long timestamp = System.currentTimeMillis();
+    // TODO: Get the current timestamp in milliseconds
+    long timestamp = 0;
     logger.info("Mining facts with difficulty " + difficulty);
     int numComp = 0;
 
@@ -57,12 +57,13 @@ class Miner {
     ByteBuffer hash;
     Long nonce = CryptoUtil.getRandomLong();
     do {
-      block.setNonce(nonce++);
+      // TODO: Set the new nonce for the hash calculation
       block.setTimestamp(System.currentTimeMillis());
-      block.setSignature(CryptoUtil.sign(block, secretKey));
+      // TODO: Sign the block here for the new nonce and timestamp values
       hash = CryptoUtil.calculateHash(block);
       numComp++;
-    } while (!validates(hash, difficulty));
+      // TODO: Check for validation ... (hint see validates)
+    } while (false);
 
     // Sets the hash
     block.setHash(hash);
@@ -80,13 +81,11 @@ class Miner {
    */
   boolean validates(ByteBuffer hash, int difficulty) {
     hash.rewind();
-    boolean verified = true;
-    while (verified && (difficulty > 0)) {
-      difficulty--;
-      verified = (hash.get(difficulty) == 0);
-    }
+
+    // TODO: validate the leading zeros on the hash regarding the difficulty
+
     hash.rewind();
 
-    return verified;
+    return false;
   }
 }
