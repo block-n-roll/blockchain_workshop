@@ -24,7 +24,7 @@ public class ClusterTest {
   }
 
   @Before
-  public void setup() throws IOException, SodiumLibraryException {
+  public void setup() throws Exception {
     // Create nodes
     cluster1 = new DummyCluster("localhost1111");
     node1 = new NodeImp(cluster1);

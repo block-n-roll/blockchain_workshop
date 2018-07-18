@@ -30,7 +30,7 @@ public class ConflictTest {
   }
 
   @Before
-  public void setup() throws IOException, SodiumLibraryException {
+  public void setup() throws Exception {
 
     // Clean up chains
     if (Files.exists(Paths.get("chain"))) {

@@ -3,6 +3,8 @@ package org.blocknroll.blockchain.workshop;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -18,7 +20,13 @@ class Miner {
   /**
    * Constructor.
    */
-  Miner() throws IOException {
+  Miner() throws Exception {
+    // Generate the key pair if directory does not exist
+    if (!Files.isDirectory(Paths.get("key"))) {
+      Files.createDirectory(Paths.get("key"));
+      CryptoUtil.generatePublicSecretKeys("key/pub.key", "key/sec.key");
+    }
+
     // Load secret key to sign mined blocks
     secretKey = CryptoUtil.loadKey("key/sec.key");
   }

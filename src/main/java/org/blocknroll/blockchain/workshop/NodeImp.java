@@ -34,13 +34,7 @@ public class NodeImp {
    *
    * @param cluster the cluster interface.
    */
-  public NodeImp(Cluster cluster) throws IOException, SodiumLibraryException {
-    // Generate the key pair if directory does not exist
-    if (!Files.isDirectory(Paths.get("key"))) {
-      Files.createDirectory(Paths.get("key"));
-      CryptoUtil.generatePublicSecretKeys("key/pub.key", "key/sec.key");
-    }
-
+  public NodeImp(Cluster cluster) throws Exception {
     // Initialise members
     this.cluster = cluster;
     chain = new Chain(cluster.getId());
@@ -61,7 +55,7 @@ public class NodeImp {
    *
    * @throws IOException throws input output or crypto exceptions.
    */
-  private void loadChain() throws IOException, SodiumLibraryException {
+  private void loadChain() throws Exception {
     try (DirectoryStream<Path> files = Files
         .newDirectoryStream(Paths.get("chain/" + cluster.getId()))) {
       List<Block> blocks = StreamSupport.stream(files.spliterator(), false)

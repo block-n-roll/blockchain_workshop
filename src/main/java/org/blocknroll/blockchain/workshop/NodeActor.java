@@ -58,7 +58,7 @@ public class NodeActor extends AbstractActor implements Cluster {
 
   private Map<Long, Long> pow = new HashMap<>();
 
-  public NodeActor() throws IOException, SodiumLibraryException {
+  public NodeActor() throws Exception {
     // Subscribe to events
     ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
     mediator.tell(new Subscribe("MineFacts", getSelf()), getSelf());

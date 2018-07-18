@@ -10,7 +10,7 @@ import org.junit.Test;
 public class MinerTest {
 
   @Test
-  public void mineTest() throws IOException, SodiumLibraryException {
+  public void mineTest() throws Exception {
     Miner miner = new Miner();
     Block b = new Block();
     String hash = CryptoUtil.bufferToHexString(miner.mine(b, 0).getHash());
@@ -19,7 +19,7 @@ public class MinerTest {
   }
 
   @Test
-  public void difficultyTest() throws IOException, SodiumLibraryException {
+  public void difficultyTest() throws Exception {
     Miner miner = new Miner();
     for (int diff = 0; diff < 3; diff++) {
       String hash = CryptoUtil.bufferToHexString(miner.mine(new Block(), diff).getHash());
@@ -28,7 +28,7 @@ public class MinerTest {
   }
 
   @Test
-  public void validate() throws IOException, SodiumLibraryException {
+  public void validate() throws Exception {
     Miner miner = new Miner();
     for (int diff = 0; diff < 3; diff++) {
       assertTrue(miner.validates(miner.mine(new Block(), diff).getHash(), diff));
