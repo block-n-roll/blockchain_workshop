@@ -28,11 +28,11 @@ public class ClusterTest {
   @Before
   public void setup() throws IOException, SodiumLibraryException {
     // Create nodes
-    cluster1 = new ClusterDummy("localhost1111");
+    cluster1 = new DummyCluster("localhost1111");
     nodeOne = new NodeImp(cluster1);
     cluster1.setSeed(nodeOne);
     proxyOne = new DummyProxyNode(nodeOne);
-    cluster2 = new ClusterDummy("localhost2222");
+    cluster2 = new DummyCluster("localhost2222");
     nodeTwo = new NodeImp(cluster2);
     cluster2.setSeed(nodeTwo);
     proxyTwo = new DummyProxyNode(nodeTwo);
@@ -40,15 +40,13 @@ public class ClusterTest {
 
   @Test
   public void addPeer() {
-    /*
     assertEquals(cluster1.getPeers().size(), 0);
     assertEquals(cluster2.getPeers().size(), 0);
-    nodeOne.addPeer(proxyTwo);
-    assertEquals(nodeOne.getPeers().size(), 1);
-    assertEquals(nodeTwo.getPeers().size(), 0);
-    nodeTwo.addPeer(proxyOne);
-    assertEquals(nodeOne.getPeers().size(), 1);
-    assertEquals(nodeTwo.getPeers().size(), 1);
-    */
+    cluster1.addPeer(proxyTwo);
+    assertEquals(cluster1.getPeers().size(), 1);
+    assertEquals(cluster2.getPeers().size(), 0);
+    cluster2.addPeer(proxyOne);
+    assertEquals(cluster1.getPeers().size(), 1);
+    assertEquals(cluster2.getPeers().size(), 1);
   }
 }

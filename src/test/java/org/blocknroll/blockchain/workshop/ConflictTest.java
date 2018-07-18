@@ -27,7 +27,7 @@ public class ConflictTest {
 
   private Collection<Fact> createFacts() {
     Collection<Fact> facts = new ArrayList<>();
-    facts.add(new Fact(ByteBuffer.allocate(0), ByteBuffer.allocate(0)));
+    facts.add(new Fact(ByteBuffer.allocate(10), ByteBuffer.allocate(10)));
     return facts;
   }
 
@@ -43,11 +43,11 @@ public class ConflictTest {
     }
 
     // Create nodes
-    cluster1 = new ClusterDummy("localhost1111");
+    cluster1 = new DummyCluster("localhost1111");
     nodeOne = new NodeImp(cluster1);
     cluster1.setSeed(nodeOne);
     proxyOne = new DummyProxyNode(nodeOne);
-    cluster2 = new ClusterDummy("localhost2222");
+    cluster2 = new DummyCluster("localhost2222");
     nodeTwo = new NodeImp(cluster2);
     cluster2.setSeed(nodeTwo);
     proxyTwo = new DummyProxyNode(nodeTwo);

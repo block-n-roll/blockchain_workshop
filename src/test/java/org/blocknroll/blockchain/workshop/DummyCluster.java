@@ -6,15 +6,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ClusterDummy implements Cluster {
+public class DummyCluster implements Cluster {
 
   private Node seed;
   private String name;
   private List<Node> peers;
 
-  public ClusterDummy(String name) {
+  public DummyCluster(String name) {
     this.name = name;
-    this.peers = new ArrayList<Node>();
+    this.peers = new ArrayList<>();
   }
 
   public void setSeed(Node seed) {
@@ -36,5 +36,10 @@ public class ClusterDummy implements Cluster {
   @Override
   public void addPeer(Node n) {
     peers.add(n);
+  }
+
+  @Override
+  public List<Node> getPeers() {
+    return peers;
   }
 }
