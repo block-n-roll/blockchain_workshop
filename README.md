@@ -1,4 +1,4 @@
-# Exercise 2
+# Exercise 3
 Complete the Miner class with the relevant code at `TODO` marks, and make all the test to pass.
 
 # Compile and run the tests
