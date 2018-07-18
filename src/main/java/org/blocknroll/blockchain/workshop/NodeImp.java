@@ -42,9 +42,9 @@ public class NodeImp {
 
     // Load the chain from disk if it exists or generate genesis block
     if (Files.isDirectory(Paths.get("chain/" + cluster.getId() + "/"))) {
-      loadChain();
+      // TODO: Load the chain if file already exist (hint ... see loadChain method
     } else {
-      chain.addBlock(new Block());
+      // TODO: Add the genesis block if no chain is persisted
     }
   }
 
@@ -95,7 +95,8 @@ public class NodeImp {
    * This is invoked when other peers are requesting the chain.
    */
   public Chain requestChain() throws Exception {
-    return chain;
+    // TODO: Return this node's chain
+    return null;
   }
 
   // -----------------------------------------------------------------------------------------------------------------
@@ -115,7 +116,8 @@ public class NodeImp {
 
     // Mine block, verify it and add it to the chain.
     logger.info("Mining facts into block ...");
-    Block block = miner.mine(facts, chain.getLastBlock(), DIFFICULTY);
+    // TODO: Mine the facts here
+    Block block = null;
     logger.info("Facts mined into block " + block.getIdentifier());
     cluster.requestProofOfWork(block);
   }
@@ -126,7 +128,8 @@ public class NodeImp {
    * @return the latest block in this chain.
    */
   public Block getLastBlock() {
-    return chain.getLastBlock();
+    // TODO: Return the last block
+    return null;
   }
 
   /**
@@ -135,7 +138,8 @@ public class NodeImp {
    * @return the Chain for this node.
    */
   public Chain getChain() {
-    return chain;
+    // TODO: Return the chain here
+    return null;
   }
 
   /**
@@ -152,15 +156,15 @@ public class NodeImp {
       previous.getHash().rewind();
       if (block.getPreviousHash().equals(previous.getHash())) {
         logger.debug("This is a good block!");
-        chain.addBlock(block);
+        // TODO: Add the block to the chain!!
         return true;
       } else if (blocks.size() == 1) {
         logger.warn("Request the chain to the peers.");
-        cluster.requestChain();
+        // TODO: Request the chain to the cluster
       } else {
         logger.warn("Received blockchain is longer, replace current one.");
         if (verifyChain(blocks)) {
-          chain = new Chain(cluster.getId(), blocks);
+          // TODO: Replace this chain's content with the given blocks
         }
       }
     } else {
@@ -175,16 +179,8 @@ public class NodeImp {
    * @param blocks the chain to be synchronised.
    */
   public boolean verifyChain(List<Block> blocks) throws SodiumLibraryException {
-    Iterator<Block> iter = blocks.iterator();
-    Block previous = iter.next();
-    while (iter.hasNext()) {
-      Block block = iter.next();
-      if (!verifyBlock(block, previous)) {
-        return false;
-      }
-      previous = block;
-    }
-    return true;
+    // TODO: Verify the list of blocks ... hint see verifyBlock
+    return false;
   }
 
   /**
@@ -196,16 +192,21 @@ public class NodeImp {
   public boolean verifyBlock(Block newBlock, Block previousBlock) throws SodiumLibraryException {
     newBlock.getPreviousHash().rewind();
     previousBlock.getHash().rewind();
-    if ((previousBlock.getIdentifier() + 1) != newBlock.getIdentifier()) {
+    // TODO: Check wrong index
+    if (true) {
       logger.warn("Invalid index");
       return false;
-    } else if (!newBlock.getPreviousHash().equals(previousBlock.getHash())) {
+    }
+    // TODO: Check previous hash is not correct
+    else if (true) {
       logger.warn("New block previous hash is:");
       logger.warn(CryptoUtil.bufferToHexString(newBlock.getPreviousHash()));
       logger.warn("Last block's hash is:");
       logger.warn(CryptoUtil.bufferToHexString(previousBlock.getHash()));
       return false;
-    } else if (!CryptoUtil.calculateHash(newBlock).equals(newBlock.getHash())) {
+    }
+    // TODO: Compute the hash and validate that is wrong (hint ... CryptoUtil.calculateHash)
+    else if (true) {
       logger.warn("Proof of work failed.");
       logger.warn("Calculated hash for block is:");
       logger.warn(CryptoUtil.bufferToHexString(CryptoUtil.calculateHash(newBlock)));
