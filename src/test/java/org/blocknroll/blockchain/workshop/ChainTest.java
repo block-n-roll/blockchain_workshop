@@ -30,8 +30,7 @@ public class ChainTest {
     Chain chain = new Chain("myChain");
     Block gen = new Block();
     chain.addBlock(gen);
-    chain.addBlock(new Block(new ArrayList<>(), gen));
-    assertEquals(2, chain.getBlocks().size());
+    assertEquals(1, chain.getBlocks().size());
   }
 
   @Test
@@ -39,8 +38,7 @@ public class ChainTest {
     Chain chain = new Chain("myChain");
     Block gen = new Block();
     chain.addBlock(gen);
-    chain.addBlock(new Block(new ArrayList<>(), gen));
-    assertEquals(2, chain.getSize());
+    assertEquals(1, chain.getSize());
   }
 
 }

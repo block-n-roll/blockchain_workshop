@@ -44,8 +44,6 @@ public class NodeImp {
     if (Files.isDirectory(Paths.get("chain/" + cluster.getId() + "/"))) {
       loadChain();
     } else {
-      // Generate the genesis block if it does not exist
-      Paths.get("chain/" + cluster.getId() + "/").toFile().mkdirs();
       chain.addBlock(new Block());
     }
   }

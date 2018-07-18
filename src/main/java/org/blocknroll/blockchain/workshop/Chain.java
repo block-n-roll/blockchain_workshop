@@ -41,6 +41,8 @@ public class Chain {
    */
   void addBlock(Block block) throws IOException {
     logger.info("Adding block " + block.getIdentifier() + " to the chain.");
+    // Generate the genesis block if it does not exist
+    Paths.get("chain/" + id + "/").toFile().mkdirs();
     chain.add(block);
     Files.write(Paths.get("chain/" + id + "/" + block.getIdentifier() + ".block"),
         CryptoUtil.bufferToHexString(block.serialise()).getBytes());
