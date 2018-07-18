@@ -27,7 +27,7 @@ public class FactTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void createFactWithEmptyDataAndValidSignature() {
-    
+
     new Fact(ByteBuffer.allocate(0), ByteBuffer.allocate(10));
   }
 

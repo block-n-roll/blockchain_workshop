@@ -7,6 +7,7 @@ import akka.actor.UntypedActor;
 import akka.cluster.Cluster;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import akka.management.AkkaManagement;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.net.Inet4Address;
@@ -168,23 +169,32 @@ public class NodeActor extends UntypedActor {
     // initialize
     checkArgs(args);
 
-    // build configuration
+// build configuration
     System.out.println("LOCALHOST: " + nodeHost);
+    String seedAddress = "";
+    if (peerAddress != null) {
+      seedAddress = peerAddress.getHostString() + ":" + peerAddress.getPort();
+    } else {
+      seedAddress = nodeHost + ":" + nodePort;
+    }
     Properties ps = new Properties();
     ps.setProperty("akka.loglevel", "INFO");
-    ps.setProperty("akka.actor.provider", "akka.remote.RemoteActorRefProvider");
-    //ps.setProperty("akka.actor.provider", "cluster");
-    //ps.setProperty("akka.remote.enabled-transports.0", "akka.remote.netty.tcp");
+//ps.setProperty("akka.actor.provider", "akka.remote.RemoteActorRefProvider");
+    ps.setProperty("akka.actor.provider", "cluster");
+//ps.setProperty("akka.remote.enabled-transports.0", "akka.remote.netty.tcp");
+    ps.setProperty("akka.cluster.seed-nodes.0", "akka.tcp://ClusterSystem@" + seedAddress);
     ps.setProperty("akka.remote.transport", "akka.remote.netty.NettyRemoteTransport");
     ps.setProperty("akka.remote.netty.tcp.hostname", nodeHost);
     ps.setProperty("akka.remote.netty.tcp.port", nodePort.toString());
     ps.setProperty("akka.remote.log-sent-messages", "on");
     ps.setProperty("akka.remote.log-received-messages", "on");
     Config config = ConfigFactory.parseProperties(ps);
+    System.out.println(config);
+
 
     // create system & actor
     ActorSystem system = ActorSystem.create("ClusterSystem", config);
     ActorRef node = system.actorOf(Props.create(NodeActor.class), buildName(nodePort));
-    //AkkaManagement.get(system).start();
+    AkkaManagement.get(system).start();
   }
 }

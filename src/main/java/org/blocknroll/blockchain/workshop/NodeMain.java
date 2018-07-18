@@ -52,6 +52,7 @@ public class NodeMain extends AbstractActor {
   // cluster objects
   private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
   private Cluster cluster = Cluster.get(getContext().system());
+
   public NodeMain(Arguments args) {
     System.out.println("Aquí estamos");
     self().tell(args, self());

@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
  * This is the miner class in charge of mining pending facts.
  */
 class Miner {
+
   private ByteBuffer secretKey;
   private Logger logger = LogManager.getLogger(Miner.class);
 

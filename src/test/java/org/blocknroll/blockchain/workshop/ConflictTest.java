@@ -33,7 +33,7 @@ public class ConflictTest {
   public void setup() throws IOException, SodiumLibraryException {
 
     // Clean up chains
-    if(Files.exists(Paths.get("chain"))) {
+    if (Files.exists(Paths.get("chain"))) {
       Files.walk(Paths.get("chain"))
           .sorted(Comparator.reverseOrder())
           .map(Path::toFile)

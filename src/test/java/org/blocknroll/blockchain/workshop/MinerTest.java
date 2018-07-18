@@ -20,8 +20,8 @@ public class MinerTest {
 
   @Test
   public void difficultyTest() throws IOException, SodiumLibraryException {
-    Miner miner = new Miner() ;
-    for(int diff = 0; diff < 3; diff++) {
+    Miner miner = new Miner();
+    for (int diff = 0; diff < 3; diff++) {
       String hash = CryptoUtil.bufferToHexString(miner.mine(new Block(), diff).getHash());
       assertTrue(hash.startsWith(new String(new char[diff]).replace("\0", "00")));
     }
@@ -29,8 +29,8 @@ public class MinerTest {
 
   @Test
   public void validate() throws IOException, SodiumLibraryException {
-    Miner miner = new Miner() ;
-    for(int diff = 0; diff < 3; diff++) {
+    Miner miner = new Miner();
+    for (int diff = 0; diff < 3; diff++) {
       assertTrue(miner.validates(miner.mine(new Block(), diff).getHash(), diff));
     }
   }

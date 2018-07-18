@@ -20,10 +20,10 @@ public class Fact {
    * @param sig the signature used to protect this fact.
    */
   public Fact(ByteBuffer dat, ByteBuffer sig) {
-    if((dat == null) || (dat.limit() == 0)){
+    if ((dat == null) || (dat.limit() == 0)) {
       throw new IllegalArgumentException("Data cannot be null or empty");
     }
-    if((sig == null) || (sig.limit() == 0)) {
+    if ((sig == null) || (sig.limit() == 0)) {
       throw new IllegalArgumentException("Signature cannot be null");
     }
     data = dat;
