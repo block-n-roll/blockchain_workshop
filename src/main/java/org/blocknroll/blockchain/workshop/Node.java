@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -17,11 +16,11 @@ import org.apache.log4j.Logger;
 /**
  * This class represents the interface towards the peers, thus declaring input / output interfaces.
  */
-public class NodeImp {
+public class Node {
 
   public static final int DIFFICULTY = 1;
   final private Cluster cluster;
-  final private Logger logger = LogManager.getLogger(NodeImp.class);
+  final private Logger logger = LogManager.getLogger(Node.class);
   final private Miner miner;
   private Chain chain;
 
@@ -34,7 +33,7 @@ public class NodeImp {
    *
    * @param cluster the cluster interface.
    */
-  public NodeImp(Cluster cluster) throws Exception {
+  public Node(Cluster cluster) throws Exception {
     // Initialise members
     this.cluster = cluster;
     chain = new Chain(cluster.getId());
@@ -42,7 +41,7 @@ public class NodeImp {
 
     // Load the chain from disk if it exists or generate genesis block
     if (Files.isDirectory(Paths.get("chain/" + cluster.getId() + "/"))) {
-      // TODO: Load the chain if file already exist (hint ... see loadChain method
+      // TODO: Load the chain if file already exist (hint: see loadChain method
     } else {
       // TODO: Add the genesis block if no chain is persisted
     }
@@ -192,7 +191,7 @@ public class NodeImp {
   public boolean verifyBlock(Block newBlock, Block previousBlock) throws SodiumLibraryException {
     newBlock.getPreviousHash().rewind();
     previousBlock.getHash().rewind();
-    // TODO: Check wrong index
+    // TODO: Check blocks are not consecutive
     if (true) {
       logger.warn("Invalid index");
       return false;
@@ -205,7 +204,7 @@ public class NodeImp {
       logger.warn(CryptoUtil.bufferToHexString(previousBlock.getHash()));
       return false;
     }
-    // TODO: Compute the hash and validate that is wrong (hint ... CryptoUtil.calculateHash)
+    // TODO: Compute the hash and validate that is wrong (hint: CryptoUtil.calculateHash)
     else if (true) {
       logger.warn("Proof of work failed.");
       logger.warn("Calculated hash for block is:");

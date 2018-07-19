@@ -10,7 +10,7 @@ public class DummyCluster implements Cluster {
   private Cluster seed;
   private String name;
   private List<Cluster> peers;
-  private NodeImp node;
+  private Node node;
 
   public DummyCluster(String name) {
     this.node = node;
@@ -18,7 +18,7 @@ public class DummyCluster implements Cluster {
     this.peers = new ArrayList<>();
   }
 
-  public void setSeed(NodeImp node) {
+  public void setSeed(Node node) {
     this.node = node;
   }
 
