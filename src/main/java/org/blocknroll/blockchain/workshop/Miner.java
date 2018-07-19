@@ -27,7 +27,7 @@ class Miner {
       CryptoUtil.generatePublicSecretKeys("key/pub.key", "key/sec.key");
     }
 
-    // TODO: Load secret key to sign mined blocks (hint see CryptoUtil)
+    // TODO: Load secret key to sign mined blocks (hint: see CryptoUtil::loadKey)
   }
 
   /**
@@ -62,7 +62,7 @@ class Miner {
       // TODO: Sign the block here for the new nonce and timestamp values
       hash = CryptoUtil.calculateHash(block);
       numComp++;
-      // TODO: Check for validation ... (hint see validates)
+      // TODO: Check for validation ... (hint: see validates)
     } while (false);
 
     // Sets the hash
