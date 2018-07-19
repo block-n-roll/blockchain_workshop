@@ -176,7 +176,7 @@ public class Block {
    * Returns the size of the facts.
    */
   private int getFactsSize() {
-    // TODO: Return the size of the facts in bytes (hint ... look at Fact::getBytes)
+    // TODO: Return the size of the facts in bytes (hint: look at Fact::getBytes)
     return 0;
   }
 
