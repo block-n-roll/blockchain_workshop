@@ -114,7 +114,7 @@ public class Fact {
    * @return true if both facts are equal, false otherwise.
    */
   public boolean equals(Object other) {
-    // TODO: Compare with other fact here (hint: use serialise and Arrays.equals)
+    // TODO: Compare with other fact here (hint: use serialise and ByteBuffer::equals)
     return false;
   }
 }
