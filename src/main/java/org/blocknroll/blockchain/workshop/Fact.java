@@ -1,7 +1,6 @@
 package org.blocknroll.blockchain.workshop;
 
 import java.nio.ByteBuffer;
-import java.util.stream.IntStream;
 
 /**
  * This represents a fact to be mined into a block.
@@ -10,8 +9,8 @@ public class Fact {
 
   private static final int DATA_SIZE_FIELD = 4;
   private static final int SIG_SIZE_FIELD = 4;
-  private ByteBuffer data;
-  private ByteBuffer signature;
+  private byte[] data;
+  private byte[] signature;
 
   /**
    * Constructor
@@ -26,8 +25,8 @@ public class Fact {
     if ((sig == null) || (sig.limit() == 0)) {
       throw new IllegalArgumentException("Signature cannot be null");
     }
-    data = dat;
-    signature = sig;
+    data = dat.array();
+    signature = sig.array();
   }
 
   /**
@@ -43,7 +42,7 @@ public class Fact {
    * @return the data associated to this fact.
    */
   ByteBuffer getData() {
-    return data;
+    return ByteBuffer.wrap(data);
   }
 
   /**
@@ -52,7 +51,7 @@ public class Fact {
    * @return the signature associated to this fact.
    */
   ByteBuffer getSignature() {
-    return signature;
+    return ByteBuffer.wrap(signature);
   }
 
   /**
@@ -62,9 +61,7 @@ public class Fact {
    */
   int getSize() {
     // Get the size of the data and signature and join the two buffers
-    data.rewind();
-    signature.rewind();
-    return DATA_SIZE_FIELD + SIG_SIZE_FIELD + data.limit() + signature.limit();
+    return DATA_SIZE_FIELD + SIG_SIZE_FIELD + data.length + signature.length;
   }
 
   /**
@@ -74,13 +71,11 @@ public class Fact {
    */
   ByteBuffer serialise() {
     // Get the size of the data and signature and join the two buffers
-    data.rewind();
-    signature.rewind();
     ByteBuffer bb = ByteBuffer.allocate(getSize());
 
     // Write size of data and signature
-    bb.putInt(data.limit());
-    bb.putInt(signature.limit());
+    bb.putInt(data.length);
+    bb.putInt(signature.length);
 
     // Write the data
     bb.put(data);
@@ -98,14 +93,12 @@ public class Fact {
     int sigSize = bb.getInt();
 
     // Read the data
-    data = ByteBuffer.allocate(dataSize);
-    IntStream.range(0, dataSize).forEach(idx -> data.put(bb.get()));
-    data.rewind();
+    data = new byte[dataSize];
+    bb.get(data);
 
     // Read the signature
-    signature = ByteBuffer.allocate(sigSize);
-    IntStream.range(0, sigSize).forEach(idx -> signature.put(bb.get()));
-    signature.rewind();
+    signature = new byte[sigSize];
+    bb.get(signature);
   }
 
   /**
@@ -115,6 +108,6 @@ public class Fact {
    * @return true if both facts are equal, false otherwise.
    */
   public boolean equals(Object other) {
-    return (other != null) && (serialise().equals(((Fact) other).serialise()));
+    return (other instanceof Fact) && (serialise().equals(((Fact) other).serialise()));
   }
 }
