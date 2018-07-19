@@ -73,9 +73,8 @@ public class Chain {
    * @return the number of blocks in the chain.
    */
   public int getSize() {
-    // TODO: Return the number of nodes of this chain
+    // TODO: Return the number of blocks of this chain
     return 0;
   }
-
-
+  
 }
