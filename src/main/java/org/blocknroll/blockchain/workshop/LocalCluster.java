@@ -18,15 +18,27 @@ public class LocalCluster implements Cluster {
   private Node node;
   private static Map<Long, Block> minedBlocks = new HashMap<>();
 
+  /**
+   * Implementation of a synchronous local cluster.
+   * @param name the name of the cluster.
+   */
   public LocalCluster(String name) {
     this.name = name;
     this.peers = new ArrayList<>();
   }
 
+  /**
+   * Sets the seed node of the cluster
+   * @param node the node.
+   */
   public void setSeed(Node node) {
     this.node = node;
   }
 
+  /**
+   * Sets the seed node of the cluster
+   * @param seed the cluster seed.
+   */
   public void setSeed(Cluster seed) {
     this.seed = seed;
   }
@@ -78,10 +90,6 @@ public class LocalCluster implements Cluster {
   public void addFacts(Collection<Fact> facts) throws Exception {
     node.mineFacts(facts);
     for (Cluster node : peers) {
-//      if(minedBlocks.containsKey(facts.iterator().next().getData().getLong())) {
-//        logger.warn("This block has already been mined! Skipping...");
-//        return;
-//      }
       ((LocalCluster) node).node.mineFacts(facts);
     }
   }
@@ -103,6 +111,7 @@ public class LocalCluster implements Cluster {
 
   @Override
   public void requestChain() throws Exception {
+    // Replace the chain
     Chain chain;
     chain = ((LocalCluster) peers.get(0)).node.requestChain();
     node.processBlock(chain.getBlocks());
