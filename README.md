@@ -10,7 +10,6 @@ mvn clean package
 # Next chapter
 run the following commands to go into the next exercise
 ```
-git reset --hard
-git clean -xfd
+git commit -am "solution"
 git checkout feature/exercise_2
 ```
