@@ -8,10 +8,8 @@ import akka.cluster.protobuf.msg.ClusterMessages.MemberStatus;
 import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator.Subscribe;
 import akka.management.AkkaManagement;
-import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -54,7 +52,7 @@ public class NodeActor extends AbstractActor implements Cluster {
   public static Integer nodePort = null;
   public static InetSocketAddress peerAddress = null;
   private akka.cluster.Cluster cluster = akka.cluster.Cluster.get(getContext().system());
-  private NodeImp node;
+  private Node node;
 
   private Map<Long, Long> pow = new HashMap<>();
 
@@ -65,7 +63,7 @@ public class NodeActor extends AbstractActor implements Cluster {
     mediator.tell(new Subscribe("RequestProofOfWork", getSelf()), getSelf());
     mediator.tell(new Subscribe("ProofOfWorkResponse", getSelf()), getSelf());
     mediator.tell(new Subscribe("BlockMined", getSelf()), getSelf());
-    node = new NodeImp(this);
+    node = new Node(this);
   }
 
   public static InetSocketAddress parseAddress(String address) {

@@ -17,11 +17,11 @@ import org.apache.log4j.Logger;
 /**
  * This class represents the interface towards the peers, thus declaring input / output interfaces.
  */
-public class NodeImp {
+public class Node {
 
   public static final int DIFFICULTY = 1;
   final private Cluster cluster;
-  final private Logger logger = LogManager.getLogger(NodeImp.class);
+  final private Logger logger = LogManager.getLogger(Node.class);
   final private Miner miner;
   private Chain chain;
 
@@ -34,7 +34,7 @@ public class NodeImp {
    *
    * @param cluster the cluster interface.
    */
-  public NodeImp(Cluster cluster) throws Exception {
+  public Node(Cluster cluster) throws Exception {
     // Initialise members
     this.cluster = cluster;
     chain = new Chain(cluster.getId());
