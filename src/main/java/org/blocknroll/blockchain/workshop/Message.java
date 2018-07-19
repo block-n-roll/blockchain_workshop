@@ -58,6 +58,25 @@ public interface Message {
       this.block = block;
       this.result = result;
     }
+
+  }
+
+  public static class GetChain implements Serializable {
+
+    public GetChain() {
+    }
+  }
+
+  public static class StatsRequest implements Serializable {
+
+    public StatsRequest() {
+    }
+  }
+
+  public static class StatsResponse implements Serializable {
+    String stats;
+    public StatsResponse(String stats) {
+    }
   }
 
 

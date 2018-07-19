@@ -215,4 +215,16 @@ public class Node {
     }
     return true;
   }
+
+  public String getStats() {
+    return
+        "Node id: " + cluster.getId() + "\n" +
+        "\tblocks in the chain: " + chain.getBlocks().size() + "\n" +
+        "\tcomputations: " + miner.getNumComputations() + "\n" +
+        "\tmined blocks: " + miner.getNumBlocksMined();
+  }
+
+  public Cluster getCluster() {
+    return cluster;
+  }
 }

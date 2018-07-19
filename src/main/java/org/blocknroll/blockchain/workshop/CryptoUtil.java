@@ -25,20 +25,15 @@ class CryptoUtil {
 
   static {
     String libraryPath;
-    if (Platform.isMac())
-    {
+    if (Platform.isMac()) {
       // MacOS
       libraryPath = "/usr/local/lib/libsodium.dylib";
       logger.info("Library path in Mac: " + libraryPath);
-    }
-    else if (Platform.isWindows())
-    {
+    } else if (Platform.isWindows()) {
       // Windows
       libraryPath = "lib/libsodium.dll";
       logger.info("Library path in Windows: " + libraryPath);
-    }
-    else
-    {
+    } else {
       // Linux
       libraryPath = "lib/libsodium.so";
       logger.info("Library path: " + libraryPath);
@@ -218,4 +213,5 @@ class CryptoUtil {
     bb.rewind();
     return bb;
   }
+
 }

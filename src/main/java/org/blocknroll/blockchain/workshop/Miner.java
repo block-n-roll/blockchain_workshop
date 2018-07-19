@@ -16,6 +16,8 @@ class Miner {
 
   private ByteBuffer secretKey;
   private Logger logger = LogManager.getLogger(Miner.class);
+  private Long numComputations = 0L;
+  private Long numBlocksMined = 0L;
 
   /**
    * Constructor.
@@ -66,6 +68,8 @@ class Miner {
 
     // Sets the hash
     block.setHash(hash);
+    numComputations += numComp;
+    numBlocksMined++;
     logger.debug("Computed hash: " + CryptoUtil.bufferToHexString(block.getHash()));
     logger.debug("Computation time (ms): " + (System.currentTimeMillis() - timestamp));
     logger.debug("Number of computations performed: " + numComp);
@@ -88,5 +92,13 @@ class Miner {
     hash.rewind();
 
     return verified;
+  }
+
+  public Long getNumComputations() {
+    return numComputations;
+  }
+
+  public Long getNumBlocksMined() {
+    return numBlocksMined;
   }
 }

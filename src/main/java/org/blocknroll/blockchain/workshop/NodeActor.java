@@ -6,6 +6,7 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.cluster.protobuf.msg.ClusterMessages.MemberStatus;
 import akka.cluster.pubsub.DistributedPubSub;
+import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.cluster.pubsub.DistributedPubSubMediator.Subscribe;
 import akka.management.AkkaManagement;
 import com.typesafe.config.Config;
@@ -14,6 +15,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -24,9 +26,11 @@ import java.util.Map;
 import java.util.Properties;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.blocknroll.blockchain.workshop.Message.GetChain;
 import org.blocknroll.blockchain.workshop.Message.MineFacts;
 import org.blocknroll.blockchain.workshop.Message.ProofOfWorkResponse;
 import org.blocknroll.blockchain.workshop.Message.RequestProofOfWork;
+import org.blocknroll.blockchain.workshop.Message.StatsRequest;
 
 public class NodeActor extends AbstractActor implements Cluster {
 
@@ -57,8 +61,11 @@ public class NodeActor extends AbstractActor implements Cluster {
   private Map<Long, Long> pow = new HashMap<>();
 
   public NodeActor() throws Exception {
+//    cluster.subscribe(self(), ClusterEvent.initialStateAsEvents(), MemberEvent.class,
+//        UnreachableMember.class, Message.MineFacts.class);
     // Subscribe to events
     ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
+    mediator.tell(new Subscribe("echo", getSelf()), getSelf());
     mediator.tell(new Subscribe("MineFacts", getSelf()), getSelf());
     mediator.tell(new Subscribe("RequestProofOfWork", getSelf()), getSelf());
     mediator.tell(new Subscribe("ProofOfWorkResponse", getSelf()), getSelf());
@@ -175,20 +182,32 @@ public class NodeActor extends AbstractActor implements Cluster {
     ActorRef node = system.actorOf(Props.create(NodeActor.class), buildName(nodePort));
     if (nodePort == DEFAULT_PORT) {
       AkkaManagement.get(system).start();
+    } else {
+      system.scheduler().scheduleOnce(Duration.ofMillis(5000),
+          node, "superTest", system.dispatcher(), null);
     }
   }
 
   @Override
   public Receive createReceive() {
     return receiveBuilder()
+        .match(DistributedPubSubMediator.SubscribeAck.class, msg ->
+            logger.info(">>>>>> subscribing " + msg))
         .match(String.class, msg -> {
               System.out.println("-------------------------------------------------");
               System.out.println(msg);
               System.out.println("-------------------------------------------------");
+              if ("superTest".equals(msg)) {
+                DistributedPubSub.get(getContext().system()).mediator()
+                    .tell(new DistributedPubSubMediator.Publish("echo", "This is a super test"),
+                        getSelf());
+              }
             }
         )
         .match(MineFacts.class, req -> {
+          logger.info("-------------------------------------------------");
           logger.info("Mining facts ...");
+          logger.info("-------------------------------------------------");
           node.mineFacts(req.facts);
         })
         .match(RequestProofOfWork.class, req -> {
@@ -216,31 +235,11 @@ public class NodeActor extends AbstractActor implements Cluster {
                 + ". Already processed block with the same identifier.");
           }
         })
+        .match(GetChain.class, req -> sender().tell(node.getChain(), self()))
+        .match(Chain.class, chain -> node.processBlock(chain.getBlocks()))
+        .match(StatsRequest.class, req -> sender().tell(node.getStats(), self()))
         .build();
   }
-
-//  @Override
-//  public void onReceive(Object msg) {
-//    log.info("Processing message...");
-//    Cluster cluster = Cluster.get(getContext().system());
-//    if (msg instanceof Message.Join) {
-//      /*
-//      log.info("Joining to " + msg.toString() + "...");
-//      Message.Join params = (Message.Join) msg;
-//      Address address = new Address("akka.tcp", "ClusterSystem", params.host, params.port);
-//      cluster.join(address);
-//      */
-//    } else if (msg instanceof Message.Leave) {
-//      /*
-//      cluster.leave(cluster.selfAddress());
-//      log.info("Leaving cluster...");
-//      Address address = new Address("akka.tcp", "ClusterSystem");
-//      cluster.join(address);
-//      */
-//    } else {
-//      log.error("Unknown message of type " + msg.getClass());
-//    }
-//  }
 
   @Override
   public void setSeed(Cluster seed) {
@@ -249,8 +248,11 @@ public class NodeActor extends AbstractActor implements Cluster {
 
   @Override
   public void requestProofOfWork(Block block) throws Exception {
+//    DistributedPubSub.get(getContext().system()).mediator()
+//        .tell(new RequestProofOfWork(block), getSelf());
     DistributedPubSub.get(getContext().system()).mediator()
-        .tell(new RequestProofOfWork(block), getSelf());
+        .tell(new DistributedPubSubMediator.Publish("echo", "This is a test"),
+            getSelf());
   }
 
   @Override

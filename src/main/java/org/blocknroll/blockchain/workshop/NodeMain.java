@@ -1,6 +1,7 @@
 package org.blocknroll.blockchain.workshop;
 
 import static org.blocknroll.blockchain.workshop.NodeActor.parseAddress;
+import static org.blocknroll.blockchain.workshop.NodeMain.Command.GET_CHAIN;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
@@ -12,10 +13,14 @@ import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
 import akka.cluster.ClusterEvent.MemberEvent;
 import akka.cluster.ClusterEvent.UnreachableMember;
+import akka.cluster.pubsub.DistributedPubSub;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
+import org.blocknroll.blockchain.workshop.Message.GetChain;
+import org.blocknroll.blockchain.workshop.Message.RequestProofOfWork;
+import org.blocknroll.blockchain.workshop.Message.StatsRequest;
 
 public class NodeMain extends AbstractActor {
 
@@ -82,9 +87,7 @@ public class NodeMain extends AbstractActor {
           } else if (args[i].equalsIgnoreCase("mine-facts")) {
             result.command = Command.MINE_FACTS;
           } else if (args[i].equalsIgnoreCase("get-chain")) {
-            result.command = Command.GET_CHAIN;
-          } else if (args[i].equalsIgnoreCase("update-chain")) {
-            result.command = Command.UPDATE_CHAIN;
+            result.command = GET_CHAIN;
           } else if (args[i].equalsIgnoreCase("status")) {
             result.command = Command.STATUS;
           } else {
@@ -99,7 +102,7 @@ public class NodeMain extends AbstractActor {
             throw new RuntimeException("too many arguments");
           }
         } else if (result.command == Command.STOP || result.command == Command.LEAVE
-            || result.command == Command.GET_CHAIN || result.command == Command.UPDATE_CHAIN
+            || result.command == GET_CHAIN
             || result.command == Command.STATUS) {
           if (result.nodeAddress == null) {
             result.nodeAddress = parseAddress(args[i]);
@@ -231,11 +234,20 @@ public class NodeMain extends AbstractActor {
               }
               break;
 
-            case STOP: {
+            case STOP:
               ActorSelection selection = getContext().actorSelection(nodeName);
               selection.tell(PoisonPill.getInstance(), getSelf());
               break;
-            }
+
+            case GET_CHAIN:
+              DistributedPubSub.get(getContext().system()).mediator()
+                  .tell(new GetChain(), getSelf());
+              break;
+
+            case STATUS:
+              DistributedPubSub.get(getContext().system()).mediator()
+                  .tell(new StatsRequest(), getSelf());
+              break;
           }
         })
         .build();
@@ -243,7 +255,7 @@ public class NodeMain extends AbstractActor {
 
   // node comands
   enum Command {
-    START, STOP, JOIN, LEAVE, MINE_FACTS, GET_CHAIN, UPDATE_CHAIN, STATUS
+    START, STOP, JOIN, LEAVE, MINE_FACTS, GET_CHAIN, STATUS
   }
 
   // input arguments
