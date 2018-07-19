@@ -3,6 +3,7 @@ package org.blocknroll.blockchain.workshop;
 import com.muquit.libsodiumjna.SodiumKeyPair;
 import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
+import com.sun.jna.Platform;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -23,7 +24,30 @@ class CryptoUtil {
   private static final Logger logger = LogManager.getLogger(CryptoUtil.class);
 
   static {
-    SodiumLibrary.setLibraryPath("lib/libsodium.dll");
+    String libraryPath;
+    if (Platform.isMac())
+    {
+      // MacOS
+      libraryPath = "/usr/local/lib/libsodium.dylib";
+      logger.info("Library path in Mac: " + libraryPath);
+    }
+    else if (Platform.isWindows())
+    {
+      // Windows
+      libraryPath = "lib/libsodium.dll";
+      logger.info("Library path in Windows: " + libraryPath);
+    }
+    else
+    {
+      // Linux
+      libraryPath = "lib/libsodium.so";
+      logger.info("Library path: " + libraryPath);
+    }
+
+    logger.info("loading libsodium...");
+    SodiumLibrary.setLibraryPath(libraryPath);
+    String v = SodiumLibrary.libsodiumVersionString();
+    logger.info("libsodium version: " + v);
   }
 
   /**
