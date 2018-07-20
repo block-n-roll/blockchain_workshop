@@ -90,10 +90,14 @@ public class ClusterTest {
     }
 
     // Tell the cluster to mine facts
-    Collection<Fact> facts = createFacts();
-    cluster.get(1).addFacts(facts);
+    cluster.get(1).addFacts(createFacts());
     for(Node node: nodes) {
       assertEquals(2, node.getChain().getSize());
+    }
+
+    cluster.get(8).addFacts(createFacts());
+    for(Node node: nodes) {
+      assertEquals(3, node.getChain().getSize());
     }
   }
 }
