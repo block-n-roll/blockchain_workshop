@@ -78,10 +78,6 @@ public class LocalCluster implements Cluster {
   public void addFacts(Collection<Fact> facts) throws Exception {
     node.mineFacts(facts);
     for (Cluster node : peers) {
-//      if(minedBlocks.containsKey(facts.iterator().next().getData().getLong())) {
-//        logger.warn("This block has already been mined! Skipping...");
-//        return;
-//      }
       ((LocalCluster) node).node.mineFacts(facts);
     }
   }
