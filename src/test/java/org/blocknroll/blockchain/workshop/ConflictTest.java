@@ -19,8 +19,8 @@ import org.junit.Test;
 
 public class ConflictTest {
 
-  private DummyCluster cluster1;
-  private DummyCluster cluster2;
+  private LocalCluster cluster1;
+  private LocalCluster cluster2;
   private Node node1;
   private Node node2;
 
@@ -58,9 +58,9 @@ public class ConflictTest {
     }
 
     // Create nodes
-    cluster1 = new DummyCluster("localhost1111");
+    cluster1 = new LocalCluster("localhost1111");
     node1 = new Node(cluster1);
-    cluster2 = new DummyCluster("localhost2222");
+    cluster2 = new LocalCluster("localhost2222");
     node2 = new Node(cluster2);
 
     // Join the cluster
@@ -158,7 +158,7 @@ public class ConflictTest {
   @Test
   public void encryptDecryptInfoOk() throws Exception {
     // Mine document
-    node1.mineFacts(createFactsFromFileSigned("C:\\Users\\Neueda\\Desktop\\bitcoin.pdf", CryptoUtil.loadKey("key\\sec.key")));
+    node1.mineFacts(createFactsFromFileSigned("bitcoin.pdf", CryptoUtil.loadKey("key\\sec.key")));
 
     // Node 1 shutdown and restart
     cluster1 = new LocalCluster("localhost1111");
@@ -170,8 +170,8 @@ public class ConflictTest {
     ByteBuffer info = node1.getLastBlock().getFacts().iterator().next().getData();
     ByteBuffer sig = node1.getLastBlock().getFacts().iterator().next().getSignature();
     System.out.println(">>>>>>>" + CryptoUtil.bufferToHexString(sig));
-    if(CryptoUtil.verify(sig, info, CryptoUtil.loadKey("key\\sec.key"))) {
-      Files.write(Paths.get("C:\\Users\\Neueda\\Desktop\\bitcoin_2.pdf"), info.array());
+    if(CryptoUtil.verify(sig, info, CryptoUtil.loadKey("key\\pub.key"))) {
+      Files.write(Paths.get("bitcoin_2.pdf"), info.array());
     } else {
       fail("La firma no es valida.");
     }
@@ -180,7 +180,7 @@ public class ConflictTest {
   @Test
   public void encryptDecryptInfoFailed() throws Exception {
     // Mine document
-    node1.mineFacts(createFactsFromFileSigned("C:\\Users\\Neueda\\Desktop\\bitcoin.pdf", CryptoUtil.loadKey("key\\sec.key")));
+    node1.mineFacts(createFactsFromFileSigned("bitcoin.pdf", CryptoUtil.loadKey("key\\sec.key")));
 
     // Node 1 shutdown and restart
     cluster1 = new LocalCluster("localhost1111");
@@ -193,6 +193,7 @@ public class ConflictTest {
     ByteBuffer sig = node1.getLastBlock().getFacts().iterator().next().getSignature();
 
     // Hack the document
+    info.rewind();
     info.putLong(0L);
     info.rewind();
     System.out.println(">>>>>>>" + CryptoUtil.bufferToHexString(sig));

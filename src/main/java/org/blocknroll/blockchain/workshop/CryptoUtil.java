@@ -58,20 +58,28 @@ class CryptoUtil {
    * @return the signature for the data.
    * @throws SodiumLibraryException throws if signature failed.
    */
-  private static ByteBuffer sign(ByteBuffer data, ByteBuffer secretKey)
+  static ByteBuffer sign(ByteBuffer data, ByteBuffer secretKey)
       throws SodiumLibraryException {
-    logger.trace("Signing data: " + bufferToHexString(data));
+    logger.debug("Signing data: " + bufferToHexString(data));
     data.rewind();
-    secretKey.rewind();
     byte[] dat = new byte[data.limit()];
-    data.get(dat);
-    byte[] sec = new byte[secretKey.limit()];
-    secretKey.get(sec);
-    byte[] sig = SodiumLibrary.cryptoSignDetached(dat, sec);
-    ByteBuffer signature = ByteBuffer.allocate(sig.length);
-    signature.put(sig);
-    logger.trace("Created signature: " + bufferToHexString(signature));
-    return signature;
+    byte result = secretKey.get(0);
+    byte[] sig = new byte[SIGNATURE_SIZE];
+    for(int idx = 0; idx < SIGNATURE_SIZE; idx++) {
+      sig[idx] = (byte) (dat[idx] ^ result);
+    }
+    return ByteBuffer.wrap(sig);
+//    data.rewind();
+//    secretKey.rewind();
+//    byte[] dat = new byte[data.limit()];
+//    data.get(dat);
+//    byte[] sec = new byte[secretKey.limit()];
+//    secretKey.get(sec);
+//    byte[] sig = SodiumLibrary.cryptoSignDetached(dat, sec);
+//    ByteBuffer signature = ByteBuffer.allocate(sig.length);
+//    signature.put(sig);
+//    logger.debug("Created signature: " + bufferToHexString(signature));
+//    return signature;
   }
 
   /**
@@ -83,17 +91,27 @@ class CryptoUtil {
    * @return true if message and signature correspong with the given public key.
    * @throws SodiumLibraryException throw if verification failed.
    */
-  private static boolean verify(ByteBuffer signature, ByteBuffer data, ByteBuffer pubKey)
+  static boolean verify(ByteBuffer signature, ByteBuffer data, ByteBuffer pubKey)
       throws SodiumLibraryException {
-    logger.trace("Verifying data: " + bufferToHexString(data));
-    signature.rewind();
-    byte[] sig = new byte[signature.limit()];
+    logger.debug("Verifying data: " + bufferToHexString(data));
+//    signature.rewind();
+//    byte[] sig = new byte[signature.limit()];
+//    signature.get(sig);
+//    data.rewind();
+//    byte[] dat = new byte[data.limit()];
+//    data.get(dat);
+//    pubKey.rewind();
+//    byte[] pub = new byte[pubKey.limit()];
+//    pubKey.get(pub);
+//    return SodiumLibrary.cryptoSignVerifyDetached(sig, dat, pub);
     data.rewind();
     byte[] dat = new byte[data.limit()];
-    pubKey.rewind();
-    byte[] pub = new byte[pubKey.limit()];
-    pubKey.get(pub);
-    return SodiumLibrary.cryptoSignVerifyDetached(sig, dat, pub);
+    byte result = pubKey.get(0);
+    byte[] sig = new byte[SIGNATURE_SIZE];
+    for(int idx = 0; idx < SIGNATURE_SIZE; idx++) {
+      sig[idx] = (byte) (dat[idx] ^ result);
+    }
+    return ByteBuffer.wrap(sig).equals(signature);
   }
 
   /**
@@ -104,7 +122,7 @@ class CryptoUtil {
    * @return the signature for the given doc and secret key.
    */
   static ByteBuffer sign(Fact fact, ByteBuffer secKey) throws SodiumLibraryException {
-    logger.trace("Signing fact ...");
+    logger.debug("Signing fact ...");
     return CryptoUtil.sign(fact.getData(), secKey);
   }
 
@@ -116,7 +134,7 @@ class CryptoUtil {
    * @return true if the fact is authentic, false otherwise.
    */
   static boolean verify(Fact fact, ByteBuffer pubKey) throws SodiumLibraryException {
-    logger.trace("Verifying fact ...");
+    logger.debug("Verifying fact ...");
     return verify(fact.getSignature(), fact.getData(), pubKey);
   }
 
@@ -128,7 +146,7 @@ class CryptoUtil {
    * @return the signature for the given block and secret key.
    */
   static ByteBuffer sign(Block block, ByteBuffer secKey) throws SodiumLibraryException {
-    logger.trace("Signing block ...");
+    logger.debug("Signing block ...");
     return CryptoUtil.sign(block.serialise(), secKey);
   }
 
@@ -140,7 +158,7 @@ class CryptoUtil {
    * @return true if the block is authentic, false otherwise.
    */
   static boolean verify(Block block, ByteBuffer pubKey) throws SodiumLibraryException {
-    logger.trace("Verifying block ...");
+    logger.debug("Verifying block ...");
     return verify(block.getSignature(), block.serialise(), pubKey);
   }
 

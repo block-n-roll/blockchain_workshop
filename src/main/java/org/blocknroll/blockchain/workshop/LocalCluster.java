@@ -5,14 +5,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class DummyCluster implements Cluster {
+public class LocalCluster implements Cluster {
 
   private Cluster seed;
   private String name;
   private List<Cluster> peers;
   private Node node;
 
-  public DummyCluster(String name) {
+  public LocalCluster(String name) {
     this.node = node;
     this.name = name;
     this.peers = new ArrayList<>();
@@ -30,7 +30,7 @@ public class DummyCluster implements Cluster {
   public void requestProofOfWork(Block block) throws Exception {
     node.processBlock(Collections.singletonList(block));
     for (Cluster peer : peers) {
-      ((DummyCluster) peer).node.processBlock(Collections.singletonList(block));
+      ((LocalCluster) peer).node.processBlock(Collections.singletonList(block));
     }
   }
 
@@ -72,7 +72,7 @@ public class DummyCluster implements Cluster {
   @Override
   public void requestChain() throws Exception {
     Chain chain;
-    chain = ((DummyCluster) peers.get(0)).node.requestChain();
+    chain = ((LocalCluster) peers.get(0)).node.requestChain();
     node.processBlock(chain.getBlocks());
   }
 }

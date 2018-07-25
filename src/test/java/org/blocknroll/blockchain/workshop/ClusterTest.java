@@ -10,8 +10,8 @@ import org.junit.Test;
 
 public class ClusterTest {
 
-  private DummyCluster cluster1;
-  private DummyCluster cluster2;
+  private LocalCluster cluster1;
+  private LocalCluster cluster2;
   private Node node1;
   private Node node2;
 
@@ -24,10 +24,10 @@ public class ClusterTest {
   @Before
   public void setup() throws Exception {
     // Create nodes
-    cluster1 = new DummyCluster("localhost1111");
+    cluster1 = new LocalCluster("localhost1111");
     node1 = new Node(cluster1);
 
-    cluster2 = new DummyCluster("localhost2222");
+    cluster2 = new LocalCluster("localhost2222");
     node2 = new Node(cluster2);
 
   }
