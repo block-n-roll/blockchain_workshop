@@ -79,6 +79,10 @@ public class Node {
           .collect(Collectors.toList());
       if (verifyChain(blocks)) {
         chain = new Chain(cluster.getId(), blocks);
+      } else {
+        logger.error("The persisted blocks are corrupted!");
+        // TODO: Remove all blocks.
+        chain.addBlock(new Block());
       }
     }
   }
